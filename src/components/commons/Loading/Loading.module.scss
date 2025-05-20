@@ -1,0 +1,77 @@
+.container {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-color: rgba(53, 53, 53, 0.3);
+	backdrop-filter: blur(2px);
+	transition: 0.3s;
+	z-index: 101;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.loadingContent {
+	span {
+		display: inline-block;
+		margin: 0 2px;
+		padding: 6px;
+		background: red;
+		border-radius: 100%;
+		-webkit-animation-name: scaleDot;
+		animation-name: scaleDot;
+		-webkit-animation-duration: 1500ms;
+		animation-duration: 1500ms;
+		-webkit-animation-iteration-count: infinite;
+		animation-iteration-count: infinite;
+		-webkit-animation-timing-function: linear;
+		animation-timing-function: linear;
+	}
+
+	span:nth-child(1) {
+		background-color: #5bbbe0;
+	}
+	span:nth-child(2) {
+		background-color: #26afe4;
+		-webkit-animation-delay: 0.2s;
+		animation-delay: 0.2s;
+	}
+	span:nth-child(3) {
+		background-color: #0074a0;
+		-webkit-animation-delay: 0.4s;
+		animation-delay: 0.4s;
+	}
+	span:nth-child(4) {
+		background-color: #b90000;
+		-webkit-animation-delay: 0.6s;
+		animation-delay: 0.6s;
+	}
+	span:nth-child(5) {
+		background-color: #ff3d3d;
+		-webkit-animation-delay: 0.8s;
+		animation-delay: 0.8s;
+	}
+}
+
+@keyframes scaleDot {
+	0% {
+		-webkit-transform: scale(1);
+		-ms-transform: scale(1);
+		transform: scale(1);
+		opacity: 1;
+	}
+	40% {
+		-webkit-transform: scale(2.5);
+		-ms-transform: scale(2.5);
+		transform: scale(2.5);
+		opacity: 0.3;
+	}
+	60% {
+		-webkit-transform: scale(1);
+		-ms-transform: scale(1);
+		transform: scale(1);
+		opacity: 1;
+	}
+}

@@ -1,0 +1,166 @@
+@import "../../../styles/variables";
+
+.container {
+	height: 100%;
+	width: 100%;
+	padding: 0 24px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background-color: #fff;
+	border: 1px solid #f4f7fa;
+}
+
+.control {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+
+	& > h4 {
+		color: #141416;
+		font-size: 18px;
+		font-weight: 700;
+	}
+}
+
+.hamburger {
+	cursor: pointer;
+	user-select: none;
+	transition: 0.1s;
+
+	&:active {
+		transform: scale(0.96);
+	}
+}
+
+.main_info {
+	display: flex;
+	align-items: center;
+	gap: 28px;
+}
+
+.box_noti {
+	cursor: pointer;
+	user-select: none;
+	position: relative;
+	transition: 0.2s;
+
+	&:active {
+		transform: scale(0.96);
+	}
+
+	.box_count {
+		position: absolute;
+		top: -12px;
+		right: -12px;
+		width: 18px;
+		height: 18px;
+		border-radius: 50%;
+		background-color: #f46161;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		& > span {
+			color: #fff;
+			font-size: 11px;
+			font-weight: 600;
+		}
+	}
+}
+
+.info {
+	cursor: pointer;
+	user-select: none;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: fit-content;
+	height: fit-content;
+	transition: 0.2s;
+
+	&:active {
+		transform: scale(0.98);
+	}
+
+	.name {
+		color: #171832;
+		font-size: 16px;
+		font-weight: 500;
+	}
+}
+.avatar_image {
+	border: 2px solid #2d74ff;
+	border-radius: 50%;
+}
+
+.arrow {
+	transition: 0.2s;
+
+	&.active {
+		transform: rotate(-180deg);
+	}
+}
+
+.overlay {
+	opacity: 0;
+	visibility: hidden;
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-color: rgba(53, 53, 53, 0.5);
+	backdrop-filter: blur(3.5px);
+	transition: 0.3s;
+	z-index: 10;
+}
+
+// Responsive mobile
+.main_mobile {
+	width: $width-tab;
+	z-index: 11;
+	position: fixed;
+	background-color: #fff;
+	top: 0;
+	left: -100%;
+	bottom: 0;
+	transition: 0.3s;
+
+	&.active {
+		left: -100%;
+	}
+}
+
+.avatar_image {
+	border: 2px solid #2d74ff;
+	border-radius: 50%;
+}
+
+@media (max-width: $widthTablet) {
+	.container {
+		padding: 0 12px;
+	}
+
+	.overlay {
+		opacity: 1;
+		visibility: initial;
+
+		&.close {
+			opacity: 0;
+			visibility: hidden;
+		}
+	}
+
+	.main_mobile {
+		&.active {
+			left: 0;
+		}
+	}
+
+	.info {
+		.name {
+			display: none;
+		}
+	}
+}
