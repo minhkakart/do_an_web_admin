@@ -35,8 +35,8 @@ function Navbar({}: PropsNavbar) {
                     <div key={i} className={styles.menu}>
                         <Link key={i} href={menu.path}
                               className={clsx(styles.tab, {[styles.active]: checkActive(menu.pathActive)})}>
-                            <menu.icon size={22} className={styles.icon}/>
-                            <p>{menu.title}</p>
+                            <menu.icon size={22} color={checkActive(menu.pathActive) ? "#fff" : "#777e90"}/>
+                            <p className="font-bold">{menu.title}</p>
                         </Link>
                     </div>
                 ))}

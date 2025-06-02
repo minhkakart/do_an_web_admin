@@ -37,7 +37,6 @@ export default function Categories() {
     const [pageSize, setPageSize] = useState<number>(PageSize[0]);
     const [keyword, setKeyword] = useState<string>('');
 
-
     const {data, isLoading} = useQuery<IPageResponse<ITableCategory>>({
         queryFn: () =>
             httpRequest({
@@ -86,8 +85,7 @@ export default function Categories() {
             <DataWrapper
                 loading={isLoading}
                 data={data?.items || []}
-                title='Danh sách chức vụ trống'
-                note='Hiện tại danh sách chức vụ đang trống?'
+                title='Danh sách danh mục'
 
             >
                 <Table<ITableCategory>
@@ -178,7 +176,7 @@ export default function Categories() {
     );
 }
 
-export function FormCreateCategory({queryKeys, onClose}: IFormCategoryProps) {
+function FormCreateCategory({queryKeys, onClose}: IFormCategoryProps) {
     const queryClient = useQueryClient();
 
     const [form, setForm] = React.useState<IFormCreateCategory>({
@@ -198,7 +196,7 @@ export function FormCreateCategory({queryKeys, onClose}: IFormCategoryProps) {
             })
         }),
         onSuccess: () => {
-            onClose();
+            onClose && onClose();
             // @ts-ignore
             queryKeys?.map((key) => queryClient.invalidateQueries([key]));
         },
@@ -262,7 +260,7 @@ export function FormCreateCategory({queryKeys, onClose}: IFormCategoryProps) {
     );
 }
 
-export function FormUpdateCategory({queryKeys, onClose}: IFormCategoryProps) {
+function FormUpdateCategory({queryKeys, onClose}: IFormCategoryProps) {
     const queryClient = useQueryClient()
     const searchParams = useSearchParams();
     const [_id] = useState(searchParams.get('_id'));
@@ -306,7 +304,7 @@ export function FormUpdateCategory({queryKeys, onClose}: IFormCategoryProps) {
             }),
         }),
         onSuccess: () => {
-            onClose();
+            onClose && onClose();
             // @ts-ignore
             queryKeys?.map((key) => queryClient.invalidateQueries([key]));
         },

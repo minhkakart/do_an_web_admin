@@ -70,7 +70,7 @@ export default function RequireAuth(props: IRequireAuthProps) {
         }
         store.dispatch(setLoading(false));
 
-    }, [accessToken, infoUser, loadLocalStorage]);
+    }, [accessToken, infoUser, loadLocalStorage]);;
 
     if (infoUser === null) {
         return <div className='loading-page'></div>;

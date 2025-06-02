@@ -2,22 +2,22 @@
 
 import React, {useEffect, useState} from "react";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import {IBaseResponse, IPageResponse} from "~/commons/interfaces";
+import {IPageResponse} from "~/commons/interfaces";
 import {httpRequest} from "~/services";
 import {BooleanType, QueryKey, TypeDiscount} from "~/constants/config/enum";
 import {PageSize} from "~/constants/config";
 import {usePathname, useRouter, useSearchParams} from "next/navigation";
 import productService from "~/services/apis/productService";
-import Form from "~/components/commons/Form";
+import Form, {FormContext, Input} from "~/components/commons/Form";
 import Loading from "~/components/commons/Loading";
-import {FormContext, Input} from "~/components/commons/Form";
 import TextArea from "~/components/commons/Form/components/TextArea";
 import Button from "~/components/commons/Button";
-import {Edit, Eye, FolderOpen, Star, Star1} from "iconsax-react";
+import {Edit, Eye, FolderOpen, Star1} from "iconsax-react";
 import {IoClose} from "react-icons/io5";
 import {
     ICreateProductRequest,
-    IFormProductProps, IProductDetailDto,
+    IFormProductProps,
+    IProductDetailDto,
     IProductListDto,
     IUpdateProductRequest
 } from "~/app/(authenticated)/products/interfaces";
@@ -28,16 +28,11 @@ import PositionContainer from "~/components/commons/PositionContainer";
 import SelectForm from "~/components/commons/SelectForm";
 import SelectMany from "~/components/commons/SelectMany";
 import categoryService from "~/services/apis/categoryService";
-import {
-    ICategoryDto,
-    IFormCategoryProps,
-    IFormUpdateCategory,
-    ITableCategory
-} from "~/app/(authenticated)/categories/interfaces";
+import {ICategoryDto} from "~/app/(authenticated)/categories/interfaces";
 import UploadMultipleFile from "~/components/commons/UploadMultipleFile";
 import uploadFileService from "~/services/apis/uploadFileService";
 import {toastWarn} from "~/commons/funcs/toast";
-import {convertCoin, convertCoinBet, price} from "~/commons/funcs/convertCoin";
+import {convertCoin, price} from "~/commons/funcs/convertCoin";
 import DataWrapper from "~/components/commons/DataWrapper";
 import Table from "~/components/commons/Table";
 import Moment from "react-moment";
@@ -108,8 +103,7 @@ export default function Products() {
             <DataWrapper
                 loading={isLoading}
                 data={data?.items || []}
-                title='Danh sách chức vụ trống'
-                note='Hiện tại danh sách chức vụ đang trống?'
+                title='Danh sách sản phẩm trống'
 
             >
                 <Table<IProductListDto>
@@ -175,7 +169,7 @@ export default function Products() {
                                         },
                                         {
                                             backgroundColor: 'rgba(244, 97, 97, 0.15)',
-                                            state: BooleanType.True,
+                                            state: BooleanType.False,
                                             text: 'Ngưng bán',
                                             textColor: '#F46161',
                                         },
@@ -191,9 +185,10 @@ export default function Products() {
                                         icon={<Eye size='32' color='#6170E3'/>}
                                         tooltip='Xem chi tiết'
                                         background='rgba(97, 112, 227, 0.10)'
-                                        onClick={() => {
-                                            router.push(pathname + `/${row.id}`);
-                                        }
+                                        onClick={
+                                            () => {
+                                                router.push(pathname + `/${row.id}`);
+                                            }
                                         }
                                     />
                                     <IconCustom
@@ -263,7 +258,7 @@ export default function Products() {
 }
 
 
-export function FormCreateProduct({queryKeys, onClose}: IFormProductProps) {
+function FormCreateProduct({queryKeys, onClose}: IFormProductProps) {
     const queryClient = useQueryClient();
 
     const [images, setImages] = React.useState<string[]>([]);
@@ -456,7 +451,7 @@ export function FormCreateProduct({queryKeys, onClose}: IFormProductProps) {
     );
 }
 
-export function FormUpdateProduct({queryKeys, onClose}: IFormProductProps) {
+function FormUpdateProduct({queryKeys, onClose}: IFormProductProps) {
     const queryClient = useQueryClient()
     const searchParams = useSearchParams();
     const [_id] = useState(searchParams.get('_id'));

@@ -1,6 +1,6 @@
 export interface IFormCategoryProps {
     queryKeys: number[];
-    onClose: () => void;
+    onClose?: () => void;
 }
 
 export interface IFormCreateCategory {

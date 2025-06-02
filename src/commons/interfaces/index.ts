@@ -37,3 +37,8 @@ export interface IMenu {
     title: string;
     icon: any;
 }
+
+export interface IFormProps {
+    queryKeys: number[];
+    onClose?: () => void;
+}

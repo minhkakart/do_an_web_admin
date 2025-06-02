@@ -24,3 +24,143 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+.toastify-custom {
+  color: #141416;
+  text-align: center;
+  padding: 6px;
+  line-height: 24px;
+  background-color: #fff;
+  border-radius: 60px;
+  margin: 10px;
+
+  .Toastify__close-button {
+    min-width: 30px;
+    min-height: 30px;
+    opacity: 1;
+    z-index: 1000;
+    color: #141416;
+    align-self: center;
+    margin-left: 10px;
+  }
+  .Toastify__toast-icon {
+    width: 50px;
+  }
+  .Toastify__toast-body {
+    padding: 0;
+    text-align: left;
+  }
+}
+
+.toastify-custom-success {
+  color: #141416;
+  text-align: center;
+  padding: 6px;
+  line-height: 24px;
+  background-color: #fff;
+  border-radius: 60px;
+  margin: 10px;
+
+  .Toastify__close-button {
+    min-width: 30px;
+    min-height: 30px;
+    opacity: 1;
+    z-index: 1000;
+    color: #141416;
+    align-self: center;
+    margin-left: 10px;
+  }
+  .Toastify__toast-icon {
+    width: 50px;
+  }
+  .Toastify__toast-body {
+    padding: 0;
+    text-align: left;
+  }
+}
+
+.toastify-custom-info {
+  color: #141416;
+  text-align: center;
+  padding: 6px;
+  line-height: 24px;
+  background-color: #fff;
+  border-radius: 60px;
+  margin: 10px;
+
+  .Toastify__close-button {
+    min-width: 30px;
+    min-height: 30px;
+    opacity: 1;
+    z-index: 1000;
+    color: #141416;
+    align-self: center;
+    margin-left: 10px;
+  }
+  .Toastify__toast-icon {
+    width: 50px;
+  }
+  .Toastify__toast-body {
+    padding: 0;
+    text-align: left;
+  }
+}
+
+.toastify-custom-error {
+  color: #141416;
+  text-align: center;
+  padding: 6px;
+  line-height: 24px;
+  background-color: #fff;
+  border-radius: 60px;
+  margin: 10px;
+
+  .Toastify__close-button {
+    min-width: 30px;
+    min-height: 30px;
+    opacity: 1;
+    z-index: 1000;
+    color: #141416;
+    align-self: center;
+    margin-left: 10px;
+  }
+  .Toastify__toast-icon {
+    width: 50px;
+  }
+  .Toastify__toast-body {
+    padding: 0;
+    text-align: left;
+  }
+}
+
+.toastify-custom-warn {
+  color: #141416;
+  text-align: center;
+  padding: 6px;
+  line-height: 24px;
+  background-color: #fff;
+  border-radius: 60px;
+  margin: 10px;
+
+  .Toastify__close-button {
+    min-width: 30px;
+    min-height: 30px;
+    opacity: 1;
+    z-index: 1000;
+    color: #141416;
+    align-self: center;
+    margin-left: 10px;
+  }
+  .Toastify__toast-icon {
+    width: 50px;
+  }
+  .Toastify__toast-body {
+    padding: 0;
+    text-align: left;
+  }
+}
+
+.recharts-wrapper > svg > g {
+  outline: none !important;
+}

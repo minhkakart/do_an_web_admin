@@ -1,18 +1,4 @@
-import {
-	ArchiveBook,
-	Buildings2,
-	Calendar,
-	Data,
-	DocumentForward,
-	DocumentText1,
-	ElementEqual, HomeTrendUp,
-	Moneys,
-	Note,
-	Receipt21,
-	ReceiptItem,
-	TagUser,
-	UserOctagon,
-} from 'iconsax-react';
+import {ArchiveBook, Award, BackwardItem, ElementEqual, HomeTrendUp, UserOctagon,} from 'iconsax-react';
 import {IMenu} from "~/commons/interfaces";
 
 export const APP_NAME = 'ADMIN_EYD';
@@ -32,8 +18,10 @@ export const allowFiles = [
 export enum PATH {
 	Home = '/',
 	Overview = '/overview',
+	Banners = '/banners',
 	Login = '/login',
 	Orders = '/orders',
+	Vouchers = '/vouchers',
 	Categories = '/categories',
 	Products = '/products',
 	Employees = '/employees',
@@ -47,10 +35,22 @@ export const Menu: IMenu[] = [
 		icon: HomeTrendUp,
 	},
 	{
+		title: 'Banners',
+		path: PATH.Banners,
+		pathActive: [PATH.Banners],
+		icon: Award,
+	},
+	{
+		title: 'Vouchers',
+		path: PATH.Vouchers,
+		pathActive: [PATH.Vouchers],
+		icon: Award,
+	},
+	{
 		title: 'Đơn hàng',
 		path: PATH.Orders,
 		pathActive: [PATH.Orders],
-		icon: ElementEqual,
+		icon: ArchiveBook,
 	},
 	{
 		title: 'Danh mục',
@@ -62,13 +62,13 @@ export const Menu: IMenu[] = [
 		title: 'Sản phẩm',
 		path: PATH.Products,
 		pathActive: [PATH.Products],
-		icon: ElementEqual,
+		icon: BackwardItem,
 	},
 	{
 		title: 'Nhân viên',
 		path: PATH.Employees,
 		pathActive: [PATH.Employees],
-		icon: ElementEqual,
+		icon: UserOctagon,
 	},
 ];
 

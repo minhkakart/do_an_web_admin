@@ -46,8 +46,8 @@ const productService = {
     },
     getLisPageProduct: (
         data: {
-            "page": number;
-            "size": number;
+            page: number;
+            size: number;
             keyword: string;
             available: number | null;
             discounting: boolean | null;
@@ -55,6 +55,17 @@ const productService = {
         tokenAxios?: any
     ) => {
         return axiosClient.post(`/api/v1/Product/get-list-page-products`, data, {
+            cancelToken: tokenAxios,
+        });
+    },
+    changeAvailableProduct: (
+        data: {
+            id:number
+            available: number
+        },
+        tokenAxios?: any
+    ) => {
+        return axiosClient.post(`/api/v1/Product/change-product-available`, data, {
             cancelToken: tokenAxios,
         });
     },

@@ -25,7 +25,7 @@ function MainLayout({children}: { children: React.ReactNode}) {
                 <header className="h-[68px] bg-white flex items-center mb-3">
                     <Header title={getPathTitle()} />
                 </header>
-                <div className="flex-1">{children}</div>
+                <div className="flex-1 p-6 transition-[padding-left] duration-100 ease-in-out">{children}</div>
             </div>
         </div>
     );
