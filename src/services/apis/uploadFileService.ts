@@ -21,8 +21,6 @@ const uploadFileService = {
 
         dataFile.append(`FileData`, file);
 
-        console.log('dataFile', dataFile);
-
         return axiosClient.post(`/api/v1/File/upload-single`, dataFile, {
             headers: {
                 'Content-Type': 'multipart/form-data',
