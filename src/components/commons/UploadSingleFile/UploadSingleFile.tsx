@@ -30,7 +30,7 @@ function UploadSingleFile({file, setFile}: IPropsUploadSingleFile) {
                 className="relative w-full h-[200px] rounded-md overflow-hidden select-none flex-auto">
                 {(file && file !== '') ?
                     <Image
-                        src={file?.url || file?.path || (file?.resource && (process.env.NEXT_PUBLIC_IMAGE + file?.resource)) || (process.env.NEXT_PUBLIC_IMAGE + file)}
+                        src={file?.url || file?.path || (file?.resource && (process.env.NEXT_PUBLIC_API + '/' + file?.resource)) || (process.env.NEXT_PUBLIC_API + '/' + file)}
                         alt='image' objectFit='cover' layout='fill'/> :
                     <div className="flex items-center justify-center w-full h-full bg-[rgba(153,162,179,0.3)] hover:cursor-pointer"
                     onClick={handleClick}

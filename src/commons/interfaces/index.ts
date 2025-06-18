@@ -22,13 +22,13 @@ export interface IBaseDto {
     id: number;
 }
 
-export interface IHttpRequest {
-    http: () => any;
-    showLoading?: boolean;
+export interface IApiRequest {
+    api: () => any;
     onError?: (err: any) => void;
+    setLoadingState?: (state: any) => void;
+    msgSuccess?: string;
     showMessageSuccess?: boolean;
     showMessageFailed?: boolean;
-    msgSuccess?: string;
 }
 
 export interface IMenu {
@@ -41,4 +41,16 @@ export interface IMenu {
 export interface IFormProps {
     queryKeys: number[];
     onClose?: () => void;
+}
+
+export interface IToken {
+    accessToken: string;
+    refreshToken: string;
+}
+
+export interface IUserData {
+    id: string;
+    fullName: string;
+    avatar: string | null;
+    role: number;
 }

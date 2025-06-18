@@ -8,6 +8,12 @@ const productService = {
             price: number;
             discount: number | null;
             discountType: number | null;
+            bestSell: number;
+            remarked: number;
+            sizePrices: {
+                sizeId: number,
+                price: number
+            }[];
             imageUrls: string[];
             categoryIds: number[];
         },
@@ -25,6 +31,12 @@ const productService = {
             price: number;
             discount: number | null;
             discountType: number | null;
+            bestSell: number;
+            remarked: number;
+            sizePrices: {
+                sizeId: number,
+                price: number
+            }[];
             imageUrls: string[];
             categoryIds: number[];
         },
@@ -61,7 +73,7 @@ const productService = {
     changeAvailableProduct: (
         data: {
             id:number
-            available: number
+            isAvailable: number
         },
         tokenAxios?: any
     ) => {

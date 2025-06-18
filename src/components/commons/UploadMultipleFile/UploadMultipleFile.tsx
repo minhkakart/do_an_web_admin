@@ -33,7 +33,7 @@ function UploadMultipleFile({images = [], setImages, isDisableDelete = false}: P
 				<div className={styles.list_image}>
 					{images.map((image, index) => (
 						<div className={styles.box_image} key={index}>
-							<Image className={styles.image} src={image?.url || image?.path || (image?.resource && (process.env.NEXT_PUBLIC_IMAGE + image?.resource))} alt='image' objectFit='cover' layout='fill' />
+							<Image className={styles.image} src={image?.url || image?.path || (image?.resource && (process.env.NEXT_PUBLIC_API + '/' + image?.resource))} alt='image' objectFit='cover' layout='fill' />
 							{isDisableDelete && !image?.file && !!image?.img ? null : (
 								<div className={clsx(styles.delete)} onClick={() => handleDelete(index)}>
 									<IoClose size={14} color='#8496AC' />

@@ -5,10 +5,10 @@ import React from "react";
 
 export default function App() {
     return (
-        <MainLayout>
-            <RequireAuth>
+        <RequireAuth>
+            <MainLayout>
                 <Overview/>
-            </RequireAuth>
-        </MainLayout>
+            </MainLayout>
+        </RequireAuth>
     );
 }

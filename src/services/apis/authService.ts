@@ -19,8 +19,8 @@ const authService = {
             cancelToken: tokenAxios,
         });
     },
-    checkToken: (data: {}, tokenAxios?: any) => {
-        return axiosClient.post(`/api/v1/Auth/check-token`, data, {
+    checkToken: (tokenAxios?: any) => {
+        return axiosClient.post(`/api/v1/Auth/check-token`, {}, {
             cancelToken: tokenAxios,
         });
     },

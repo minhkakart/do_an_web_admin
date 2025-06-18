@@ -1,16 +1,22 @@
 'use client';
 
-import {Fragment} from 'react';
-import {RootState} from '~/redux/store';
+import {Fragment, useEffect, useState} from 'react';
+import {RootState, store} from '~/redux/store';
 
 import Lottie from 'react-lottie';
 
 import {PropsSplashScreen} from './interfaces';
 import clsx from 'clsx';
 import styles from './SplashScreen.module.scss';
-import {useSelector} from 'react-redux';
 
 import * as loading from '../../../../public/static/anim/loadingScreen.json';
+import {getItemStorage} from "~/commons/funcs/localStorage";
+import {IToken, IUserData} from "~/commons/interfaces";
+import {KEY_STORAGE_TOKEN} from "~/constants/config";
+import {setIsCheckingToken, setIsLoggedIn, setToken, setUserData} from "~/redux/appReducer";
+import {useSelector} from "react-redux";
+import {apiRequest} from "~/services";
+import authService from "~/services/apis/authService";
 
 const defaultOptions = {
     loop: true,
@@ -21,17 +27,55 @@ const defaultOptions = {
     },
 };
 
-function SplashScreen({}: PropsSplashScreen) {
-    const {loading} = useSelector((state: RootState) => state.site);
-    return (
+function SplashScreen({children}: PropsSplashScreen) {
+    const [loadingToken, setLoadingToken] = useState<Boolean>(true)
+
+    const appToken = useSelector((state: RootState) => state.token);
+    const checkingToken = useSelector((state: RootState) => state.isCheckingToken);
+
+    // useEffect(() => {
+    //     if (loadingToken) {
+    //         return () => {
+    //         };
+    //     }
+    //     (async () => {
+    //         if (appToken !== null) {
+    //             const res: IUserData = await apiRequest({
+    //                 api: async () => authService.checkToken()
+    //             });
+    //             if (!!res) {
+    //                 store.dispatch(setUserData(res))
+    //                 store.dispatch(setIsLoggedIn(true))
+    //             }
+    //         }
+    //         setLoadingToken(false);
+    //     })();
+    // }, [appToken, loadingToken]);
+
+    useEffect(() => {
+        if (!appToken) {
+            store.dispatch(setIsCheckingToken(true));
+            setLoadingToken(true);
+            const token = getItemStorage<IToken>(KEY_STORAGE_TOKEN);
+            if (!!token) {
+                store.dispatch(setToken(token));
+                setLoadingToken(false);
+                return;
+            }
+            store.dispatch(setIsCheckingToken(false));
+        }
+        setLoadingToken(false);
+    }, [])
+
+    return (loadingToken) ?
         <Fragment>
-            <div className={clsx(styles.container, {[styles.close]: !loading})}>
+            <div className={clsx(styles.container, styles.close)}>
                 <div className={styles.logo}>
                     <Lottie options={defaultOptions}/>
                 </div>
             </div>
-        </Fragment>
-    );
+        </Fragment> :
+        children
 }
 
 export default SplashScreen;

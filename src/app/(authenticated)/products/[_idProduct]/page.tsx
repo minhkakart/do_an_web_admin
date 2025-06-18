@@ -1,7 +1,7 @@
 'use client';
 import React, {use, useRef} from 'react';
 import productService from "~/services/apis/productService";
-import {httpRequest} from "~/services";
+import {apiRequest} from "~/services";
 import {useQuery} from "@tanstack/react-query";
 import {IProductDetailDto} from "~/app/(authenticated)/products/interfaces";
 import Loading from "~/components/commons/Loading";
@@ -29,9 +29,8 @@ function DetailProduct({params}: {
 
     const {data: detailProduct, isLoading} = useQuery<IProductDetailDto>({
         queryFn: () =>
-            httpRequest({
-                showLoading: false,
-                http: () => productService.detailProduct({
+            apiRequest({
+                api: () => productService.detailProduct({
                     id: Number(_idProduct),
                 }),
             }),
@@ -140,9 +139,9 @@ function DetailProduct({params}: {
                                 <div className="flex items-center gap-3 flex-wrap">
                                     {detailProduct?.imageUrls?.map((v, index) => (
                                         <a key={index} className={'slick__slide'}
-                                           data-src={`${process.env.NEXT_PUBLIC_IMAGE}${v}`}>
+                                           data-src={`${process.env.NEXT_PUBLIC_API}/${v}`}>
                                             <Image
-                                                src={`${process.env.NEXT_PUBLIC_IMAGE}${v}`}
+                                                src={`${process.env.NEXT_PUBLIC_API}/${v}`}
                                                 alt='image slider'
                                                 objectFit='cover'
                                                 width={120}

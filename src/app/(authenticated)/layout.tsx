@@ -6,11 +6,11 @@ import MainLayout from "~/components/layouts/MainLayout/MainLayout";
 
 function AuthLayout({children}: { children: React.ReactNode }) {
     return (
-        <MainLayout>
-            <RequireAuth>
+        <RequireAuth>
+            <MainLayout>
                 {children}
-            </RequireAuth>
-        </MainLayout>
+            </MainLayout>
+        </RequireAuth>
     );
 }
 

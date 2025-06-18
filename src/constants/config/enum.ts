@@ -4,6 +4,8 @@ export enum QueryKey {
     tableEmployee,
     tableVoucher,
     tableBanner,
+    listCategory,
+    listSize,
 }
 
 export enum UserRole {
@@ -30,4 +32,9 @@ export enum BooleanType {
 export enum VoucherState {
     NotUse = 0,
     InUse = 1
+}
+
+export enum ProductType {
+    Main = 1,
+    Topping
 }

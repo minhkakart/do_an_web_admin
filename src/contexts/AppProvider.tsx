@@ -10,26 +10,27 @@ import SplashScreen from '~/components/protected/SplashScreen';
 import React from "react";
 
 const queryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			refetchOnWindowFocus: false,
-		},
-	},
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false,
+        },
+    },
 });
 
-function AppProvider({children, pageProps}: {children: React.ReactNode; pageProps: any}) {
+function AppProvider({children, pageProps}: { children: React.ReactNode; pageProps: any }) {
 
-	return (
-		<Provider store={store}>
-			<QueryClientProvider client={queryClient}>
-				<HydrationBoundary state={pageProps.dehydratedState}>
-					<SplashScreen />
-					<ToastContainer autoClose={3000} />
-					{children}
-				</HydrationBoundary>
-			</QueryClientProvider>
-		</Provider>
-	);
+    return (
+        <Provider store={store}>
+            <QueryClientProvider client={queryClient}>
+                <HydrationBoundary state={pageProps.dehydratedState}>
+                    <ToastContainer autoClose={3000}/>
+                    <SplashScreen>
+                        {children}
+                    </SplashScreen>
+                </HydrationBoundary>
+            </QueryClientProvider>
+        </Provider>
+    );
 }
 
 export default AppProvider;

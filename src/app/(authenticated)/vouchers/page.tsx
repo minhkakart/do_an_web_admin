@@ -4,9 +4,8 @@ import {usePathname, useRouter, useSearchParams} from "next/navigation";
 import {PageSize} from "~/constants/config";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {IFormProps, IPageResponse} from "~/commons/interfaces";
-import {httpRequest} from "~/services";
-import categoryService from "~/services/apis/categoryService";
-import {BooleanType, QueryKey, TypeDiscount, VoucherState} from "~/constants/config/enum";
+import {apiRequest} from "~/services";
+import {QueryKey, TypeDiscount, VoucherState} from "~/constants/config/enum";
 import Loading from "~/components/commons/Loading";
 import Search from "~/components/commons/Search";
 import Button from "~/components/commons/Button";
@@ -19,20 +18,13 @@ import IconCustom from "~/components/commons/IconCustom";
 import {Edit, FolderOpen} from "iconsax-react";
 import Pagination from "~/components/commons/Pagination";
 import {IVoucherListDto, IVoucherRequestCreate} from "~/app/(authenticated)/vouchers/interfaces";
-import {convertCoin, price} from "~/commons/funcs/convertCoin";
+import {convertCoin} from "~/commons/funcs/convertCoin";
 import StateActive from "~/components/commons/StateActive";
 import voucherService from "~/services/apis/voucherService";
-import {ICreateProductRequest, IFormProductProps} from "~/app/(authenticated)/products/interfaces";
-import {ICategoryDto} from "~/app/(authenticated)/categories/interfaces";
-import productService from "~/services/apis/productService";
-import uploadFileService from "~/services/apis/uploadFileService";
-import {toastWarn} from "~/commons/funcs/toast";
 import Form from "~/components/commons/Form/Form";
 import {FormContext, Input} from "~/components/commons/Form";
-import SelectMany from "~/components/commons/SelectMany";
 import SelectForm from "~/components/commons/SelectForm";
 import TextArea from "~/components/commons/Form/components/TextArea";
-import UploadMultipleFile from "~/components/commons/UploadMultipleFile";
 import {IoClose} from "react-icons/io5";
 import PositionContainer from "~/components/commons/PositionContainer";
 import moment from "moment";
@@ -49,9 +41,8 @@ function Page() {
 
     const {data: listVoucher, isLoading} = useQuery<IPageResponse<IVoucherListDto>>({
         queryFn: () =>
-            httpRequest({
-                showLoading: false,
-                http: async () => voucherService.getListPageVoucher({
+            apiRequest({
+                api: async () => voucherService.getListPageVoucher({
                     page: page,
                     size: pageSize,
                     keyword: keyword,
@@ -242,12 +233,11 @@ function FormCreateVoucher({queryKeys, onClose}: IFormProps) {
     });
 
     const funcCreateVoucher = useMutation({
-        mutationFn: () => httpRequest({
+        mutationFn: () => apiRequest({
             showMessageFailed: true,
             showMessageSuccess: true,
-            showLoading: false,
             msgSuccess: 'Thêm voucher thành công!',
-            http: async () => voucherService.createVoucher({
+            api: async () => voucherService.createVoucher({
                 ...form,
                 startTime: timeSubmit(new Date(moment(form.startTime).format('YYYY-MM-DD'))),
                 endTime: form.endTime?.length == 0 ? null : timeSubmit(new Date(moment(form.endTime).format('YYYY-MM-DD')), true),

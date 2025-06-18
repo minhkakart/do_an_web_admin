@@ -4,7 +4,7 @@ import {usePathname, useRouter, useSearchParams} from "next/navigation";
 import {PageSize} from "~/constants/config";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {IFormProps, IPageResponse} from "~/commons/interfaces";
-import {httpRequest} from "~/services";
+import {apiRequest} from "~/services";
 import {BooleanType, QueryKey} from "~/constants/config/enum";
 import Button from "~/components/commons/Button";
 import Image from "next/image";
@@ -26,13 +26,14 @@ import Form, {FormContext, Input} from "~/components/commons/Form";
 import bannerService from "~/services/apis/bannerService";
 import UploadSingleFile from "~/components/commons/UploadSingleFile/UploadSingleFile";
 import uploadFileService from "~/services/apis/uploadFileService";
-import {toastWarn} from "~/commons/funcs/toast";
 import Dialog from "~/components/commons/Dialog";
 import 'lightgallery/css/lightgallery.css';
 import 'lightgallery/css/lg-thumbnail.css';
 import 'lightgallery/css/lg-zoom.css';
 import 'lightgallery/css/lg-video.css';
 import 'lightgallery/css/lg-share.css';
+import {toast} from "react-toastify";
+import {ToastCustom} from "~/commons/funcs/toast";
 
 function Page() {
     const router = useRouter();
@@ -50,9 +51,8 @@ function Page() {
 
     const {data: listBanner, isLoading: loadingBanner} = useQuery<IPageResponse<IBannerDto>>({
         queryFn: () =>
-            httpRequest({
-                showLoading: false,
-                http: async () => bannerService.getListPageBanner({
+            apiRequest({
+                api: async () => bannerService.getListPageBanner({
                     page: page,
                     size: pageSize,
                 }),
@@ -64,12 +64,11 @@ function Page() {
     });
 
     const funcDeleteBanner = useMutation({
-        mutationFn: () => httpRequest({
+        mutationFn: () => apiRequest({
             showMessageFailed: true,
             showMessageSuccess: true,
-            showLoading: false,
             msgSuccess: 'Chỉnh sửa danh mục thành công!',
-            http: async () => bannerService.deleteBanner({
+            api: async () => bannerService.deleteBanner({
                 id: deleteId!,
             }),
         }),
@@ -129,9 +128,9 @@ function Page() {
                                 >
                                     <div className="flex items-center gap-3 flex-wrap">
                                         <a className={'slick__slide'}
-                                           data-src={`${process.env.NEXT_PUBLIC_IMAGE}${row.imageUrl}`}>
+                                           data-src={`${process.env.NEXT_PUBLIC_API}/${row.imageUrl}`}>
                                             <Image
-                                                src={`${process.env.NEXT_PUBLIC_IMAGE}${row.imageUrl}`}
+                                                src={`${process.env.NEXT_PUBLIC_API}/${row.imageUrl}`}
                                                 alt='image slider'
                                                 objectFit='cover'
                                                 width={80}
@@ -277,12 +276,11 @@ function FormCreateBanner({queryKeys, onClose}: IFormProps) {
     });
 
     const funcCreateBanner = useMutation({
-        mutationFn: (image: string) => httpRequest({
+        mutationFn: (image: string) => apiRequest({
             showMessageFailed: true,
             showMessageSuccess: true,
-            showLoading: false,
             msgSuccess: 'Thêm banner thành công!',
-            http: () => bannerService.upsertBanner({
+            api: () => bannerService.upsertBanner({
                 ...form,
                 imageUrl: image,
             }),
@@ -296,17 +294,16 @@ function FormCreateBanner({queryKeys, onClose}: IFormProps) {
 
     const handleSubmit = async () => {
         if (!!image?.file) {
-            const imageUrl: string = await httpRequest({
-                showLoading: false,
-                http: () => uploadFileService.uploadSingleFile(image.file),
+            const imageUrl: string = await apiRequest({
+                api: () => uploadFileService.uploadSingleFile(image.file),
             });
             if (imageUrl !== null) {
                 return funcCreateBanner.mutate(imageUrl);
             } else {
-                return toastWarn({msg: 'Upload ảnh thất bại!'});
+                return toast.error('Upload ảnh thất bại!', ToastCustom.toastError);
             }
         } else {
-            return toastWarn({msg: 'Ảnh không được để trống!'});
+            return toast.warn('Ảnh không được để trống!', ToastCustom.toastWarn);
         }
     }
 
@@ -365,12 +362,11 @@ function FormUpdateBanner({queryKeys, onClose, data}: IFormUpdateBanner) {
     });
 
     const funcUpdateBanner = useMutation({
-        mutationFn: (image: string) => httpRequest({
+        mutationFn: (image: string) => apiRequest({
             showMessageFailed: true,
             showMessageSuccess: true,
-            showLoading: false,
             msgSuccess: 'Chỉnh sửa banner thành công!',
-            http: () => bannerService.upsertBanner({
+            api: () => bannerService.upsertBanner({
                 ...form,
                 imageUrl: image,
             }),
@@ -384,14 +380,13 @@ function FormUpdateBanner({queryKeys, onClose, data}: IFormUpdateBanner) {
 
     const handleSubmit = async () => {
         if (!!image?.file) {
-            const imageUrl: string = await httpRequest({
-                showLoading: false,
-                http: () => uploadFileService.uploadSingleFile(image.file),
+            const imageUrl: string = await apiRequest({
+                api: () => uploadFileService.uploadSingleFile(image.file),
             });
             if (imageUrl !== null) {
                 return funcUpdateBanner.mutate(imageUrl);
             } else {
-                return toastWarn({msg: 'Upload ảnh thất bại!'});
+                return toast.error('Upload ảnh thất bại!', ToastCustom.toastError);
             }
         } else {
             return funcUpdateBanner.mutate(form.imageUrl);

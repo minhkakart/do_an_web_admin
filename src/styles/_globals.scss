@@ -1,6 +1,6 @@
-@import './color';
 @import './grid';
 @import './stylesGlobals';
+@import "tailwindcss";
 
 :root {
 	--toastify-toast-min-height: 56px;
@@ -12,17 +12,17 @@ body {
 	padding: 0;
 	margin: 0;
 	font-family: SF-Pro;
-	color: var(--text-color);
-	background-color: var(--bg);
+	color: #353945;
+	background-color: #f8f8f8;
 
 	::-moz-selection {
-		color: var(--light);
-		background: var(--primary);
+		color: #fff;
+		background: #3772ff;
 	}
 
 	::selection {
-		color: var(--light);
-		background: var(--primary);
+		color: #fff;
+		background: #3772ff;
 	}
 }
 
@@ -40,10 +40,6 @@ a {
 *::after {
 	box-sizing: border-box;
 }
-* {
-	margin: 0;
-	padding: 0;
-}
 
 html,
 body {
@@ -51,6 +47,7 @@ body {
 }
 body {
 	line-height: 1.5;
+	overflow-y: overlay;
 }
 
 img,
@@ -99,7 +96,7 @@ input:-internal-autofill-selected {
 }
 
 #nprogress .bar {
-	background: var(--blue);
+	background: #3772ff;
 	position: fixed;
 	z-index: 1031;
 	top: 0;
@@ -114,7 +111,7 @@ input:-internal-autofill-selected {
 	right: 0px;
 	width: 100px;
 	height: 100%;
-	box-shadow: 0 0 10px var(--blue), 0 0 5px var(--blue);
+	box-shadow: 0 0 10px #3772ff, 0 0 5px #3772ff;
 	opacity: 1;
 	-webkit-transform: rotate(3deg) translate(0px, -4px);
 	-ms-transform: rotate(3deg) translate(0px, -4px);
@@ -135,8 +132,8 @@ input:-internal-autofill-selected {
 	height: 18px;
 	box-sizing: border-box;
 	border: solid 2px transparent;
-	border-top-color: var(--blue);
-	border-left-color: var(--blue);
+	border-top-color: #3772ff;
+	border-left-color: #3772ff;
 	border-radius: 50%;
 
 	-webkit-animation: nprogress-spinner 400ms linear infinite;
@@ -170,12 +167,16 @@ input:-internal-autofill-selected {
 	}
 }
 
+.Toastify__toast-container {
+	z-index: 9999999 !important;
+}
+
 .toastify-custom {
-	color: var(--dark);
+	color: #141416;
 	text-align: center;
 	padding: 6px;
 	line-height: 24px;
-	background-color: var(--light);
+	background-color: #fff;
 	border-radius: 60px;
 	margin: 10px;
 
@@ -184,7 +185,7 @@ input:-internal-autofill-selected {
 		min-height: 30px;
 		opacity: 1;
 		z-index: 1000;
-		color: var(--dark);
+		color: #141416;
 		align-self: center;
 		margin-left: 10px;
 	}
@@ -198,11 +199,11 @@ input:-internal-autofill-selected {
 }
 
 .toastify-custom-success {
-	color: var(--dark);
+	color: #141416;
 	text-align: center;
 	padding: 6px;
 	line-height: 24px;
-	background-color: var(--light);
+	background-color: #fff;
 	border-radius: 60px;
 	margin: 10px;
 
@@ -211,7 +212,7 @@ input:-internal-autofill-selected {
 		min-height: 30px;
 		opacity: 1;
 		z-index: 1000;
-		color: var(--dark);
+		color: #141416;
 		align-self: center;
 		margin-left: 10px;
 	}
@@ -225,11 +226,11 @@ input:-internal-autofill-selected {
 }
 
 .toastify-custom-info {
-	color: var(--dark);
+	color: #141416;
 	text-align: center;
 	padding: 6px;
 	line-height: 24px;
-	background-color: var(--light);
+	background-color: #fff;
 	border-radius: 60px;
 	margin: 10px;
 
@@ -238,9 +239,11 @@ input:-internal-autofill-selected {
 		min-height: 30px;
 		opacity: 1;
 		z-index: 1000;
-		color: var(--dark);
+		color: #141416;
 		align-self: center;
 		margin-left: 10px;
+		top: 0!important;
+		height: 100%;
 	}
 	.Toastify__toast-icon {
 		width: 50px;
@@ -252,11 +255,11 @@ input:-internal-autofill-selected {
 }
 
 .toastify-custom-error {
-	color: var(--dark);
+	color: #141416;
 	text-align: center;
 	padding: 6px;
 	line-height: 24px;
-	background-color: var(--light);
+	background-color: #fff;
 	border-radius: 60px;
 	margin: 10px;
 
@@ -265,9 +268,11 @@ input:-internal-autofill-selected {
 		min-height: 30px;
 		opacity: 1;
 		z-index: 1000;
-		color: var(--dark);
+		color: #141416;
 		align-self: center;
 		margin-left: 10px;
+		top: 0!important;
+		height: 100%;
 	}
 	.Toastify__toast-icon {
 		width: 50px;
@@ -279,11 +284,11 @@ input:-internal-autofill-selected {
 }
 
 .toastify-custom-warn {
-	color: var(--dark);
+	color: #141416;
 	text-align: center;
 	padding: 6px;
 	line-height: 24px;
-	background-color: var(--light);
+	background-color: #fff;
 	border-radius: 60px;
 	margin: 10px;
 
@@ -292,9 +297,11 @@ input:-internal-autofill-selected {
 		min-height: 30px;
 		opacity: 1;
 		z-index: 1000;
-		color: var(--dark);
+		color: #141416;
 		align-self: center;
 		margin-left: 10px;
+		top: 0!important;
+		height: 100%;
 	}
 	.Toastify__toast-icon {
 		width: 50px;
@@ -303,4 +310,8 @@ input:-internal-autofill-selected {
 		padding: 0;
 		text-align: left;
 	}
+}
+
+.recharts-wrapper > svg > g {
+	outline: none !important;
 }

@@ -1,204 +1,129 @@
-// noinspection ExceptionCaughtLocallyJS
-
-import axios from 'axios';
-import {toastInfo, toastSuccess, toastWarn} from '~/commons/funcs/toast';
-import {store} from '~/redux/store';
-import {IBaseResponse, IHttpRequest} from "~/commons/interfaces";
-import {setLoading} from "~/redux/reducer/site";
-import {setInfoUser} from "~/redux/reducer/user";
-import {getItemStorage, setItemStorage} from "~/commons/funcs/localStorage";
-import {IToken, setAccessToken, setRefreshToken} from "~/redux/reducer/auth";
+import axios, {AxiosResponse} from "axios";
+import {store} from "~/redux/store";
+import {IApiRequest, IBaseResponse, IToken} from "~/commons/interfaces";
+import {ToastCustom} from "~/commons/funcs/toast";
+import {logout, setIsCheckingToken, setIsLoggedIn, setIsTokenValid, setToken} from "~/redux/appReducer";
+import {setItemStorage} from "~/commons/funcs/localStorage";
 import {KEY_STORAGE_TOKEN} from "~/constants/config";
+import {toast} from "react-toastify";
 
 const axiosClient = axios.create({
     headers: {
         'content-type': 'application/json',
     },
-    baseURL: process.env.NODE_ENV == 'development' ? process.env.NEXT_PUBLIC_API_URL_DEV : process.env.NEXT_PUBLIC_API_URL_PRODUCTION,
+    baseURL: process.env.NEXT_PUBLIC_API,
     timeout: 60 * 1000,
     timeoutErrorMessage: 'Timeout error request',
 });
 
 axiosClient.interceptors.request.use(async (config) => {
-    const token = store.getState().auth.accessToken;
-    config.headers.Authorization = token ? 'Bearer ' + token : null;
+    const token = store.getState().token?.accessToken;
+
+    if (!!token) {
+        config.headers['Authorization'] = 'Bearer ' + token;
+    }
 
     return config;
 });
 
 axiosClient.interceptors.response.use(
-    (response: any) => {
+    (response: AxiosResponse) => {
         if (response && response.data) {
             return response.data;
         }
-
         return response;
     },
     (error: any) => {
         if (error.response && error.response.data) {
-            throw error.response.data;
+            throw error.response.data.error;
         }
-
         if (!axios.isCancel(error)) throw error;
     }
 );
 export default axiosClient;
-/*
 
-export const httpRequest = async ({
-                                      http,
-                                      showLoading = true,
-                                      msgSuccess = 'Thành công',
-                                      showMessageSuccess = false,
-                                      showMessageFailed = false,
-                                      onError
-                                  }: IHttpRequest) => {
-    showLoading && store.dispatch(setLoading(true));
+export const apiRequest = async (
+    {
+        api,
+        setLoadingState,
+        msgSuccess = 'Thành công',
+        showMessageSuccess = false,
+        showMessageFailed = false,
+        onError = (err) => {
+        }
+    }: IApiRequest) => {
     try {
-        let res: IBaseResponse<any> = await http();
+        if (!!setLoadingState) {
+            setLoadingState(() => true);
+        }
+        let response: IBaseResponse<any> = await api();
 
-        if (res.error.code === 1) {
-            showMessageSuccess && msgSuccess && toastSuccess({msg: msgSuccess || res?.error?.message});
-            return res.data || true;
-        } else if (res.error.code === 4) {
-            const tokenStorage = getItemStorage<IToken | null>(KEY_STORAGE_TOKEN);
-            console.log("tokenStorage", tokenStorage);
-            if (tokenStorage === null){
-                store.dispatch(setInfoUser(null));
-                showLoading && store.dispatch(setLoading(false));
-                return false;
-            }
+        // Success
+        if (response.error.code === 1) {
+            showMessageSuccess && toast.success(msgSuccess, ToastCustom.toastSuccess);
+            return response.data === null ? true : response.data;
+        }
 
-            const token = await axios.post((process.env.NODE_ENV == 'development' ? process.env.NEXT_PUBLIC_API_URL_DEV : process.env.NEXT_PUBLIC_API_URL_PRODUCTION) + '/api/v1/Auth/refresh', {}, {
+        if (response.error.code === -440) {
+            const refreshToken = store.getState().token?.refreshToken;
+            const axiosResponse = await axios.post(process.env.NEXT_PUBLIC_API + '/api/v1/Auth/refresh', {}, {
                 headers: {
-                    authorization: `Bearer ${tokenStorage.refreshToken}`
+                    Authorization: 'Bearer ' + refreshToken
                 }
-            });
-
-            if (token?.data?.accessToken && token?.data?.refreshToken) {
-                console.log("refresh token success", token.data);
-                store.dispatch(setAccessToken(token.data.accessToken));
-                store.dispatch(setRefreshToken(token.data.refreshToken));
-                setItemStorage(KEY_STORAGE_TOKEN, token.data);
-
-                res = await http();
-
-                if (res.error.code === 1) {
-                    showMessageSuccess && msgSuccess && toastSuccess({msg: msgSuccess || res?.error?.message});
-                    return res.data || true;
+            })
+            const refreshResult: IBaseResponse<IToken> = axiosResponse.data;
+            // Success
+            if (refreshResult.error.code === 1) {
+                store.dispatch(setToken(refreshResult.data))
+                setItemStorage(KEY_STORAGE_TOKEN, refreshResult.data);
+                // Retry the original API request with the new token
+                response = await api();
+                // Success
+                if (response.error.code === 1) {
+                    showMessageSuccess && toast.success(msgSuccess, ToastCustom.toastSuccess);
+                    return response.data === null ? true : response.data;
                 } else {
-                    throw res?.error?.message;
+                    throw response.error;
                 }
             } else {
-                store.dispatch(setInfoUser(null));
-                showLoading && store.dispatch(setLoading(false));
-                return false;
+                throw refreshResult.error;
             }
+        }
 
-        } else {
-            throw res?.error?.message;
+        // Custom error
+        showMessageFailed && toast.error((response.error.message || "Có lỗi xảy ra"), ToastCustom.toastError);
+    } catch (error: any) {
+        onError && onError(error);
+
+        // Axios error
+        if (error.code == 'ERR_NETWORK' || error.code == 'ECONNABORTED') {
+            showMessageFailed && toast.info('Lỗi kết nối internet', ToastCustom.toastInfo);
+            // throw error;
         }
-    } catch (err: any) {
-        console.log("axiosClient error", err);
-        if (err?.status === 401 || err?.error?.code === 3) {
-            store.dispatch(setInfoUser(null));
-        } else if (err.code == 'ERR_NETWORK' || err.code == 'ECONNABORTED') {
-            showMessageFailed && toastInfo({msg: 'Kiểm tra kết nối internet'});
-        } else {
-            showMessageFailed && toastWarn({msg: err?.error?.message || 'Có lỗi đã xảy ra!'});
+
+        // Custom error
+        switch (error.status || error.code) {
+            case 401:
+                showMessageFailed && toast.error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại', ToastCustom.toastError);
+                store.dispatch(logout());
+                store.dispatch(setIsCheckingToken(false));
+                store.dispatch(setIsLoggedIn(false));
+                store.dispatch(setIsTokenValid(false));
+                break;
+            case 403:
+                showMessageFailed && toast.error('Bạn không có quyền truy cập', ToastCustom.toastError);
+                break;
+            case 500:
+                showMessageFailed && toast.error('Lỗi hệ thống, vui lòng thử lại sau', ToastCustom.toastError);
+                break;
+            default:
+                showMessageFailed && toast.error((error.message || 'Có lỗi xảy ra'), ToastCustom.toastError);
+                break;
         }
-        onError && onError(err);
-        throw err;
+        // throw error;
     } finally {
-        showLoading && store.dispatch(setLoading(false));
+        if (!!setLoadingState) {
+            setLoadingState(() => false);
+        }
     }
-};
-*/
-
-export const httpRequest = async ({
-                                      http,
-                                      showLoading = true,
-                                      msgSuccess = 'Thành công',
-                                      showMessageSuccess = false,
-                                      showMessageFailed = false,
-                                      onError
-                                  }: IHttpRequest) => {
-    showLoading && store.dispatch(setLoading(true));
-
-    try {
-        let res: IBaseResponse<any> = await http();
-
-        if (res.error.code === 1) {
-            showMessageSuccess && msgSuccess && toastSuccess({msg: msgSuccess || res?.error?.message});
-            return res.data || true;
-        }
-
-        // Token expired
-        /*else if (res.error.code === 4) {
-            const tokenStorage = getItemStorage<IToken | null>(KEY_STORAGE_TOKEN);
-            if (!tokenStorage) {
-                store.dispatch(setInfoUser(null));
-                return false;
-            }
-
-            try {
-                const token = await axios.post(
-                    `${process.env.NODE_ENV === 'development'
-                        ? process.env.NEXT_PUBLIC_API_URL_DEV
-                        : process.env.NEXT_PUBLIC_API_URL_PRODUCTION}/api/v1/Auth/refresh`,
-                    {},
-                    {
-                        headers: {
-                            authorization: `Bearer ${tokenStorage.refreshToken}`
-                        }
-                    }
-                );
-
-                const {accessToken, refreshToken} = token?.data || {};
-
-                if (accessToken && refreshToken) {
-                    console.log("refresh token success", token.data);
-                    store.dispatch(setAccessToken(accessToken));
-                    store.dispatch(setRefreshToken(refreshToken));
-                    setItemStorage(KEY_STORAGE_TOKEN, {accessToken, refreshToken});
-
-                    const retryRes: IBaseResponse<any> = await http();
-
-                    if (retryRes.error.code === 1) {
-                        showMessageSuccess && msgSuccess && toastSuccess({msg: msgSuccess || retryRes?.error?.message});
-                        return retryRes.data || true;
-                    } else {
-                        throw retryRes?.error;
-                    }
-                } else {
-                    store.dispatch(setInfoUser(null));
-                    return false;
-                }
-
-            } catch (refreshErr) {
-                console.log("Refresh token failed", refreshErr);
-                store.dispatch(setInfoUser(null));
-                return false;
-            }
-
-        }*/ else {
-            throw res?.error;
-        }
-    } catch (err: any) {
-        console.log("axiosClient error", err);
-
-        if (err?.status === 401 || err?.error?.code === 3) {
-            store.dispatch(setInfoUser(null));
-        } else if (err.code === 'ERR_NETWORK' || err.code === 'ECONNABORTED') {
-            showMessageFailed && toastInfo({msg: 'Kiểm tra kết nối internet'});
-        } else {
-            showMessageFailed && toastWarn({msg: err?.error?.message || 'Có lỗi đã xảy ra!'});
-        }
-
-        onError?.(err);
-        throw err;
-    } finally {
-        showLoading && store.dispatch(setLoading(false));
-    }
-};
-
+}

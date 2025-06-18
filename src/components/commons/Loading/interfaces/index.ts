@@ -1,3 +1,3 @@
 export interface PropsLoading {
-	loading: boolean;
+	loading?: boolean;
 }

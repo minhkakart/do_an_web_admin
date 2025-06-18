@@ -15,13 +15,11 @@ import {useSelector} from 'react-redux';
 import {RootState, store} from '~/redux/store';
 import Dialog from "~/components/commons/Dialog";
 import { useMutation } from '@tanstack/react-query';
-import {httpRequest} from "~/services";
+import {apiRequest} from "~/services";
 import authService from "~/services/apis/authService";
-import {logout} from "~/redux/reducer/auth";
-import {setInfoUser} from "~/redux/reducer/user";
 import {KEY_STORAGE_TOKEN, PATH} from "~/constants/config";
-import {isSetIterator} from "node:util/types";
-import {setItemStorage} from "~/commons/funcs/localStorage";
+import {deleteItemStorage, setItemStorage} from "~/commons/funcs/localStorage";
+import {logout, setIsLoggedIn} from "~/redux/appReducer";
 
 ;
 
@@ -31,7 +29,7 @@ function Header({title}: PropsHeader) {
     const [openMenu, setOpenMenu] = useState<boolean>(false);
     const [openProfile, setOpenProfile] = useState<boolean>(false);
 
-    const {infoUser} = useSelector((state: RootState) => state.user);
+    const infoUser = useSelector((state: RootState) => state.userData);
 
     useEffect(() => {
         if (openMenu) {
@@ -73,7 +71,7 @@ function Header({title}: PropsHeader) {
                         <div className={styles.box_avatar}>
                             <Image
                                 className={styles.avatar_image}
-                                src={infoUser?.avatar ? `${process.env.NEXT_PUBLIC_IMAGE}/${infoUser?.avatar}` : icons.avatar}
+                                src={infoUser?.avatar ? `${process.env.NEXT_PUBLIC_API}/${infoUser?.avatar}` : icons.avatar}
                                 alt='avatar default'
                                 width={42}
                                 height={42}
@@ -104,16 +102,16 @@ function MenuProfile({onClose}: { onClose: () => void }) {
 
     const funcLogout = useMutation({
         mutationFn: () =>
-            httpRequest({
+            apiRequest({
                 showMessageFailed: true,
                 showMessageSuccess: false,
-                http: async () => authService.logout({}),
+                api: async () => authService.logout({}),
             }),
         onSuccess(data) {
             if (data) {
                 store.dispatch(logout());
-                store.dispatch(setInfoUser(null));
-                setItemStorage(KEY_STORAGE_TOKEN, null);
+                store.dispatch(setIsLoggedIn(false));
+                deleteItemStorage(KEY_STORAGE_TOKEN);
                 router.push(PATH.Login);
             }
         },

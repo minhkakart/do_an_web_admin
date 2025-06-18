@@ -1,10 +1,10 @@
 'use client'
 
-import React, {useEffect, useState} from "react";
+import React, {Dispatch, SetStateAction, useEffect, useState} from "react";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {IPageResponse} from "~/commons/interfaces";
-import {httpRequest} from "~/services";
-import {BooleanType, QueryKey, TypeDiscount} from "~/constants/config/enum";
+import {apiRequest} from "~/services";
+import {BooleanType, ProductType, QueryKey, TypeDiscount} from "~/constants/config/enum";
 import {PageSize} from "~/constants/config";
 import {usePathname, useRouter, useSearchParams} from "next/navigation";
 import productService from "~/services/apis/productService";
@@ -12,13 +12,13 @@ import Form, {FormContext, Input} from "~/components/commons/Form";
 import Loading from "~/components/commons/Loading";
 import TextArea from "~/components/commons/Form/components/TextArea";
 import Button from "~/components/commons/Button";
-import {Edit, Eye, FolderOpen, Star1} from "iconsax-react";
+import {Danger, Edit, Eye, FolderOpen, Star1, TickCircle, Trash} from "iconsax-react";
 import {IoClose} from "react-icons/io5";
 import {
     ICreateProductRequest,
     IFormProductProps,
     IProductDetailDto,
-    IProductListDto,
+    IProductListDto, ISizeDto,
     IUpdateProductRequest
 } from "~/app/(authenticated)/products/interfaces";
 import Search from "~/components/commons/Search";
@@ -31,7 +31,6 @@ import categoryService from "~/services/apis/categoryService";
 import {ICategoryDto} from "~/app/(authenticated)/categories/interfaces";
 import UploadMultipleFile from "~/components/commons/UploadMultipleFile";
 import uploadFileService from "~/services/apis/uploadFileService";
-import {toastWarn} from "~/commons/funcs/toast";
 import {convertCoin, price} from "~/commons/funcs/convertCoin";
 import DataWrapper from "~/components/commons/DataWrapper";
 import Table from "~/components/commons/Table";
@@ -40,39 +39,60 @@ import IconCustom from "~/components/commons/IconCustom";
 import Pagination from "~/components/commons/Pagination";
 import StateActive from "~/components/commons/StateActive";
 import {HiOutlineLockClosed, HiOutlineLockOpen} from "react-icons/hi";
+import {toast} from "react-toastify";
+import {ToastCustom} from "~/commons/funcs/toast";
+import sizeService from "~/services/apis/sizeService";
+import GridColumn from "~/components/layouts/GridColumn";
+import TippyHeadless from '@tippyjs/react/headless';
+import Tippy from "@tippyjs/react";
+import clsx from "clsx";
+import Dialog from "~/components/commons/Dialog";
 
 export default function Products() {
     const router = useRouter();
+    const queryClient = useQueryClient();
+
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const _action = searchParams.get('_action');
     const [page, setPage] = useState<number>(1);
     const [pageSize, setPageSize] = useState<number>(PageSize[0]);
     const [keyword, setKeyword] = useState<string>('');
-    const [available, setAvailable] = useState<number | null>(null);
-    const [discounting, setDiscounting] = useState<boolean | null>(null);
+    const [available, setAvailable] = useState<{ id: number, name: string, isAvailable: number } | null>(null);
+    const [sizePricesIndex, setSizePricesIndex] = useState<number | null>(null);
 
     const {data, isLoading} = useQuery<IPageResponse<IProductListDto>>({
         queryFn: () =>
-            httpRequest({
-                showLoading: false,
-                http: async () => productService.getLisPageProduct({
+            apiRequest({
+                api: async () => productService.getLisPageProduct({
                     page: page,
                     size: pageSize,
                     keyword: keyword,
-                    available: available,
-                    discounting: discounting
+                    available: null,
+                    discounting: null
                 }),
             }),
         select(data: IPageResponse<IProductListDto>) {
             return data;
         },
-        queryKey: [QueryKey.tableProduct, keyword, page, pageSize, available, discounting],
+        queryKey: [QueryKey.tableProduct, keyword, page, pageSize],
+    });
+
+    const funcChangeAvailable = useMutation({
+        mutationFn: (body: { id: number, isAvailable: number }) => apiRequest({
+            api: async () => productService.changeAvailableProduct(body),
+            msgSuccess: "Cập nhật trạng thái sản phẩm thành công!",
+            showMessageSuccess: true,
+            showMessageFailed: true,
+        }),
+        async onSuccess() {
+            setAvailable(null);
+            await queryClient.invalidateQueries({queryKey: [QueryKey.tableProduct]});
+        }
     });
 
     return (
         <>
-            <Loading loading={isLoading}/>
             <div className="flex justify-between items-center gap-3 flex-wrap mb-3">
                 <div className="flex gap-3 flex-wrap">
                     <div className="min-w-[400px]">
@@ -116,11 +136,65 @@ export default function Products() {
                         },
                         {
                             title: 'Tên sản phẩm',
-                            render: (row, _) => <>{row.name || '---'}</>,
+                            render: (row, _) => (
+                                <div className="flex flex-col items-start justify-center">
+                                    <div>
+                                        {row.name}
+                                    </div>
+                                    <div className="flex mt-0.5 gap-1">
+                                        {row.bestSell == BooleanType.True && (<div
+                                            className="text-[12px] font-normal px-0.5 rounded-xs bg-yellow-300">Bestseller</div>)}
+                                        {row.remarked == BooleanType.True && (<div
+                                            className="text-[12px] font-normal px-0.5 rounded-xs bg-green-300">Nổi
+                                            bật</div>)}
+                                    </div>
+                                </div>
+                            ),
                         },
                         {
                             title: 'Giá',
-                            render: (row, _) => <>{convertCoin(row.price)}</>,
+                            render: (row, idx) =>
+                                <div className="cursor-pointer">
+                                    <TippyHeadless
+                                        maxWidth={'100%'}
+                                        interactive
+                                        onClickOutside={() => setSizePricesIndex(null)}
+                                        visible={sizePricesIndex == idx}
+                                        placement='bottom'
+                                        render={(attrs) => (
+                                            <div
+                                                className="min-w-[240px] rounded px-4 py-4 bg-white shadow-[0_0_5px_0_rgba(0,0,0,0.1),_0_0_1px_0_rgba(0,0,0,0.1)]">
+                                                <div>
+                                                    {row?.sizePrices?.map((v, i) => (
+                                                        <div key={i}
+                                                             className="text-[#2d74ff] text-sm font-medium flex items-center gap-[6px] [&+&]:mt-[6px]">
+                                                            <div
+                                                                className="w-[6px] h-[6px] rounded-full bg-[#2d74ff]"></div>
+                                                            <p>
+                                                                {v?.size.name} : {" " + v?.price}
+                                                            </p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    >
+                                        <Tippy content='Xem giá'>
+                                            <p
+                                                onClick={() => {
+                                                    if (row?.sizePrices?.length == 0) {
+                                                        return;
+                                                    } else {
+                                                        setSizePricesIndex(sizePricesIndex ? null : idx);
+                                                    }
+                                                }}
+                                                className={clsx("w-fit cursor-pointer select-none font-semibold transition duration-300 hover:text-[#2d74ff]", {"text-[#2d74ff]": sizePricesIndex == idx})}
+                                            >
+                                                {row?.price || 0}
+                                            </p>
+                                        </Tippy>
+                                    </TippyHeadless>
+                                </div>,
                         },
                         {
                             title: 'Giảm giá',
@@ -140,7 +214,7 @@ export default function Products() {
                                 </>,
                         },
                         {
-                            title: 'Số bình luận',
+                            title: 'Bình luận',
                             render: (row, _) => <>{convertCoin(row.numComment) || '---'}</>,
                         },
                         {
@@ -154,6 +228,27 @@ export default function Products() {
                                     )}
                                 </>
                             ),
+                        },
+                        {
+                            title: 'Loại sản phẩm',
+                            render: (row, _) =>
+                                <StateActive
+                                    stateActive={row?.type}
+                                    listState={[
+                                        {
+                                            backgroundColor: '#1DC94D26',
+                                            state: ProductType.Main,
+                                            text: 'Sản phẩm chính',
+                                            textColor: '#1DC94D',
+                                        },
+                                        {
+                                            backgroundColor: '#F18E0B26',
+                                            state: ProductType.Topping,
+                                            text: 'Topping',
+                                            textColor: '#F18E0B',
+                                        },
+                                    ]}
+                                />
                         },
                         {
                             title: 'Trạng thái',
@@ -216,7 +311,7 @@ export default function Products() {
                                             row?.isAvailable == BooleanType.True ? 'rgba(244, 97, 97, 0.1)' : 'rgba(78, 203, 113, 0.1)'
                                         }
                                         onClick={() => {
-                                            // setDataChangeStatus(row)
+                                            setAvailable({id: row.id, name: row.name, isAvailable: row.isAvailable});
                                         }}
                                     />
                                 </div>
@@ -233,6 +328,23 @@ export default function Products() {
                 onSetPageSize={setPageSize}
                 total={data?.pagination?.totalCount || 0}
                 dependencies={[pageSize, keyword]}
+            />
+
+            <Dialog
+                type={available?.isAvailable === BooleanType.True ? "warning" : "primary"}
+                open={!!available}
+                onClose={() => setAvailable(null)}
+                title={available?.isAvailable === BooleanType.True ? "Ngừng bán sản phẩm?" : "Mở bán sản phẩm?"}
+                note={available?.isAvailable === BooleanType.True ? `Xác nhận ngừng bán sản phẩm ${available?.name}?` : `Xác nhận mở bán sản phẩm ${available?.name}?`}
+                icon={
+                    available?.isAvailable === BooleanType.True ?
+                        <Danger size='76' color='#F46161' variant='Bold'/> :
+                        <TickCircle size='76' color='#1dc94d' variant='Bold'/>
+                }
+                onSubmit={() => funcChangeAvailable.mutate({
+                    id: available!.id,
+                    isAvailable: 1 - available!.isAvailable
+                })}
             />
 
             <PositionContainer
@@ -270,28 +382,39 @@ function FormCreateProduct({queryKeys, onClose}: IFormProductProps) {
         discount: 0,
         discountType: TypeDiscount.Percent,
         categoryIds: [],
+        sizePrices: [],
+        bestSell: BooleanType.False,
+        remarked: BooleanType.False,
+        type: ProductType.Main,
         imageUrls: []
     });
 
-    const {data: listCategory = [], isFetched} = useQuery<ICategoryDto[]>({
-        queryFn: () => httpRequest({
-            showLoading: false,
-            http: async () => categoryService.getListAllCategory({}),
+    const {data: listCategory = []} = useQuery<ICategoryDto[]>({
+        queryFn: () => apiRequest({
+            api: async () => categoryService.getListAllCategory({}),
         }),
         select(data: ICategoryDto[]) {
             return data;
         },
-        queryKey: [],
-        enabled: true,
+        queryKey: [QueryKey.listCategory],
+    });
+
+    const {data: listSize = []} = useQuery<ISizeDto[]>({
+        queryFn: () => apiRequest({
+            api: async () => sizeService.getListSize(),
+        }),
+        select(data: ISizeDto[]) {
+            return data;
+        },
+        queryKey: [QueryKey.listSize],
     });
 
     const funcCreateProduct = useMutation({
-        mutationFn: (images: string[]) => httpRequest({
+        mutationFn: (images: string[]) => apiRequest({
             showMessageFailed: true,
             showMessageSuccess: true,
-            showLoading: false,
             msgSuccess: 'Thêm sản phẩm thành công!',
-            http: async () => productService.createProduct({
+            api: async () => productService.createProduct({
                 ...form,
                 price: price(form.price),
                 discount: price(form.discount ?? 0),
@@ -312,16 +435,15 @@ function FormCreateProduct({queryKeys, onClose}: IFormProductProps) {
         if (images.length > 0) {
             const imgs = images?.map((v: any) => v?.file);
 
-            const dataImage = await httpRequest({
-                showLoading: false,
-                http: () => uploadFileService.uploadMultiFile(imgs),
+            const dataImage = await apiRequest({
+                api: () => uploadFileService.uploadMultiFile(imgs),
             });
 
             console.log('uploaded image:', dataImage);
             if (dataImage !== null) {
                 return funcCreateProduct.mutate(dataImage);
             } else {
-                return toastWarn({msg: 'Upload ảnh thất bại!'});
+                return toast.warn('Upload ảnh thất bại!', ToastCustom.toastWarn);
             }
         } else {
             return funcCreateProduct.mutate([]);
@@ -345,27 +467,36 @@ function FormCreateProduct({queryKeys, onClose}: IFormProductProps) {
 							</span>
                         }
                     />
-                    <SelectMany
-                        text={"danh mục"}
-                        label='Chọn danh mục'
-                        placeholder='Chọn danh mục'
-                        selectedItems={form.categoryIds}
-                        options={listCategory}
-                        setSelectedItems={(list) =>
-                            setForm((prev) => ({
-                                ...prev,
-                                categoryIds: list as number[],
-                            }))
-                        }
-                        onRemove={(item) =>
-                            setForm((prev) => ({
-                                ...prev,
-                                categoryIds: prev.categoryIds.filter((v) => v !== item)
-                            }))
-                        }
-                        getOptionLabel={(item) => item.name}
-                        getOptionValue={(item) => item.id}
-                    />
+                    <div className="flex w-fit items-center justify-center gap-2">
+                        <div
+                            className={clsx("cursor-pointer border border-gray-300 rounded-md p-2",
+                                {'border-red-400 bg-red-400 text-white': form.type === ProductType.Main})
+                            }
+                            onClick={() => setForm({
+                                ...form,
+                                type: ProductType.Main
+                            })}
+                        >
+                            Sản phẩm chính
+                        </div>
+                        <div
+                            className={clsx("cursor-pointer border border-gray-300 rounded-md p-2",
+                                {'border-red-400 bg-red-400 text-white': form.type === ProductType.Topping})
+                            }
+                            onClick={() => setForm({
+                                ...form,
+                                type: ProductType.Topping,
+                                sizePrices: [], // Reset size prices when switching to Topping
+                                remarked: BooleanType.False,
+                                bestSell: BooleanType.False,
+                                discount: 0,
+                                categoryIds: [],
+                                discountType: TypeDiscount.Percent,
+                            })}
+                        >
+                            Topping
+                        </div>
+                    </div>
                     <Input
                         placeholder='Nhập giá sản phẩm'
                         name='price'
@@ -378,50 +509,132 @@ function FormCreateProduct({queryKeys, onClose}: IFormProductProps) {
 							</span>
                         }
                     />
-                    <div className="flex gap-4 flex-row">
-                        <Input
-                            placeholder='Giảm giá'
-                            name='discount'
-                            type='text'
-                            isMoney
-                            min={0}
-                            max={form.discountType == TypeDiscount.Percent ? 100 : form.price}
-                            label={
-                                <span>
+                    {form.type === ProductType.Main && (
+                        <>
+                            <SelectMany
+                                text={"Danh mục"}
+                                label='Danh mục'
+                                placeholder='Chọn danh mục'
+                                selectedItems={form.categoryIds}
+                                options={listCategory}
+                                setSelectedItems={(list) =>
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        categoryIds: list as number[],
+                                    }))
+                                }
+                                onRemove={(item) =>
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        categoryIds: prev.categoryIds.filter((v) => v !== item)
+                                    }))
+                                }
+                                getOptionLabel={(item) => item.name}
+                                getOptionValue={(item) => item.id}
+                            />
+                            <div>
+                                <span className="font-[500] text-[16px] mb-2 block">Giá theo size</span>
+                                {form.sizePrices.map((_, index) =>
+                                    <SizePrice
+                                        index={index}
+                                        form={form}
+                                        setForm={setForm}
+                                        listSize={listSize}/>
+                                )}
+                                {form.sizePrices.length < listSize.length &&
+                                    <p
+                                        className="cursor-pointer text-blue-600"
+                                        onClick={() => setForm((prev) => {
+                                            if (prev.sizePrices.length === listSize.length) return prev;
+                                            return {
+                                                ...prev,
+                                                sizePrices: [
+                                                    ...prev.sizePrices,
+                                                    {
+                                                        sizeId: 0,
+                                                        price: 0,
+                                                    },
+                                                ],
+                                            };
+                                        })}>
+                                        Thêm size
+                                    </p>
+                                }
+                            </div>
+                            <div className="flex gap-4 flex-row">
+                                <Input
+                                    placeholder='Giảm giá'
+                                    name='discount'
+                                    type='text'
+                                    isMoney
+                                    min={0}
+                                    max={form.discountType == TypeDiscount.Percent ? 100 : form.price}
+                                    label={
+                                        <span>
 								Giảm giá
 							</span>
-                            }
-                            className={"flex-1"}
-                        />
-                        <SelectForm
-                            placeholder='Lựa chọn'
-                            label={
-                                <span>
+                                    }
+                                    className={"flex-1"}
+                                />
+                                <SelectForm
+                                    placeholder='Lựa chọn'
+                                    label={
+                                        <span>
 									Loại giảm giá
 								</span>
-                            }
-                            isSearch={false}
-                            value={form.discountType}
-                            options={[
-                                {
-                                    label: '%',
-                                    value: TypeDiscount.Percent,
-                                },
-                                {
-                                    label: 'VNĐ',
-                                    value: TypeDiscount.Absolute,
-                                }
-                            ]}
-                            getOptionLabel={(opt) => opt.label}
-                            getOptionValue={(opt) => opt.value}
-                            onSelect={(opt) => {
-                                setForm((prev) => ({
-                                    ...prev,
-                                    discountType: opt.value,
-                                }));
-                            }}
-                        />
-                    </div>
+                                    }
+                                    isSearch={false}
+                                    value={form.discountType}
+                                    options={[
+                                        {
+                                            label: '%',
+                                            value: TypeDiscount.Percent,
+                                        },
+                                        {
+                                            label: 'VNĐ',
+                                            value: TypeDiscount.Absolute,
+                                        }
+                                    ]}
+                                    getOptionLabel={(opt) => opt.label}
+                                    getOptionValue={(opt) => opt.value}
+                                    onSelect={(opt) => {
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            discountType: opt.value,
+                                        }));
+                                    }}
+                                />
+                            </div>
+                            <div className="flex items-center gap-4 justify-start">
+                                <div className="flex items-center justify-start gap-[10px]">
+                                    <input type="checkbox" id="remarked" className="w-6 h-6"
+                                           checked={form.remarked == BooleanType.True}
+                                           onChange={(e) => {
+                                               setForm((prev) => ({
+                                                   ...prev,
+                                                   remarked: e.target.checked ? BooleanType.True : BooleanType.False,
+                                               }));
+                                           }}
+                                    />
+                                    <label htmlFor="remarked" className="text-[16px] font-[500] block mb-0!">Nổi bật</label>
+                                </div>
+                                <div className="flex items-center justify-start gap-[10px]">
+                                    <input type="checkbox" id="bestSell" className="w-6 h-6"
+                                           checked={form.bestSell == BooleanType.True}
+                                           onChange={(e) => {
+                                               setForm((prev) => ({
+                                                   ...prev,
+                                                   bestSell: e.target.checked ? BooleanType.True : BooleanType.False,
+                                               }));
+                                           }}
+                                    />
+                                    <label htmlFor="bestSell" className="text-[16px] font-[500] block mb-0!">Best
+                                        seller</label>
+                                </div>
+                            </div>
+                        </>
+                    )}
+
                     <TextArea name='description' placeholder='Nhập mô tả' label='Mô tả'/>
                     <UploadMultipleFile images={images} setImages={setImages}/>
                 </div>
@@ -448,6 +661,86 @@ function FormCreateProduct({queryKeys, onClose}: IFormProductProps) {
                 </div>
             </div>
         </Form>
+    )
+        ;
+}
+
+interface ISizePriceProp {
+    index: number;
+    form: ICreateProductRequest;
+    setForm: Dispatch<SetStateAction<any>>;
+    listSize: ISizeDto[];
+}
+
+function SizePrice({
+                       index,
+                       form,
+                       setForm,
+                       listSize,
+                   }: ISizePriceProp) {
+    const selectedSizeIds = new Set(form.sizePrices.filter((_, i) => i !== index).map((item) => item.sizeId));
+    const filteredListSize = listSize.filter((f) => !selectedSizeIds.has(f.id));
+
+    const handleSelectSize = (index: number, value: number) => {
+        setForm((prev: any) => {
+            const updatedList = [...prev.sizePrices];
+            updatedList[index] = {
+                ...updatedList[index],
+                sizeId: value,
+            };
+            return {...prev, sizePrices: updatedList};
+        });
+    };
+
+    const handleDeleteSizePrice = (index: number) => {
+        setForm((prev: any) => ({
+            ...prev,
+            sizePrices: prev.sizePrices.filter((_: any, i: any) => i !== index)
+        }));
+    };
+
+    return (
+        <div className="[&+&]:mt-3">
+            <GridColumn col_2>
+                <SelectForm
+                    placeholder='Chọn size'
+                    value={form.sizePrices?.[index]?.sizeId}
+                    options={filteredListSize}
+                    getOptionLabel={(opt) => opt.name}
+                    getOptionValue={(opt) => opt.id}
+                    onSelect={(val) => handleSelectSize(index, val.id)}
+                />
+                <div className="flex items-end gap-3">
+                    <div className="flex-1">
+                        <Input
+                            placeholder='Nhập giá'
+                            name={`sizePrice-${index}`}
+                            isMoney
+                            type="text"
+                            unit="VNĐ"
+                            value={form?.sizePrices?.[index]?.price ?? 0}
+                            onChange={(e: any) => {
+                                const value = e.target.value;
+                                console.log('value:', value);
+                                setForm((prev: any) => {
+                                    const updatedList = [...prev.sizePrices];
+                                    updatedList[index] = {
+                                        ...updatedList[index],
+                                        price: value ? parseInt(value, 10) : 0,
+                                    };
+                                    return {...prev, sizePrices: updatedList};
+                                });
+                            }}
+                        />
+                    </div>
+                    <div
+                        className="cursor-pointer w-12 h-12 flex justify-center items-center rounded-lg bg-[rgba(244,97,97,0.2)] transition duration-300 hover:bg-[rgba(244,97,97,0.5)] active:scale-95"
+                        onClick={() => handleDeleteSizePrice(index)}>
+                        <Trash color='#F46161' size={24}/>
+                    </div>
+                </div>
+            </GridColumn>
+        </div>
     );
 }
 
@@ -465,13 +758,16 @@ function FormUpdateProduct({queryKeys, onClose}: IFormProductProps) {
         discount: 0,
         discountType: TypeDiscount.Percent,
         categoryIds: [],
+        sizePrices: [],
+        bestSell: BooleanType.False,
+        remarked: BooleanType.False,
+        type: ProductType.Main,
         imageUrls: []
     })
 
     const {data: listCategory = []} = useQuery<ICategoryDto[]>({
-        queryFn: () => httpRequest({
-            showLoading: false,
-            http: async () => categoryService.getListAllCategory({}),
+        queryFn: () => apiRequest({
+            api: async () => categoryService.getListAllCategory({}),
         }),
         select(data: ICategoryDto[]) {
             return data;
@@ -480,12 +776,21 @@ function FormUpdateProduct({queryKeys, onClose}: IFormProductProps) {
         enabled: true,
     });
 
+    const {data: listSize = []} = useQuery<ISizeDto[]>({
+        queryFn: () => apiRequest({
+            api: async () => sizeService.getListSize(),
+        }),
+        select(data: ISizeDto[]) {
+            return data;
+        },
+        queryKey: [QueryKey.listSize],
+    });
+
 
     const {data: detailProduct, isFetched: detailProductFetched} = useQuery<IProductDetailDto>({
         queryFn: () =>
-            httpRequest({
-                showLoading: false,
-                http: async () => productService.detailProduct({
+            apiRequest({
+                api: async () => productService.detailProduct({
                     id: Number(_id),
                 }),
             }),
@@ -506,7 +811,11 @@ function FormUpdateProduct({queryKeys, onClose}: IFormProductProps) {
                 discount: detailProduct.discount,
                 discountType: detailProduct.discountType,
                 categoryIds: detailProduct.categories.map(c => c.id),
-                imageUrls: detailProduct.imageUrls
+                imageUrls: detailProduct.imageUrls,
+                sizePrices: detailProduct.sizePrices.map(s => ({sizeId: s.size.id, price: s.price})),
+                remarked: detailProduct.remarked,
+                bestSell: detailProduct.bestSell,
+                type: detailProduct.type,
             });
             setImages(detailProduct.imageUrls.map(x => {
                 return {resource: x};
@@ -516,12 +825,11 @@ function FormUpdateProduct({queryKeys, onClose}: IFormProductProps) {
 
 
     const funcUpdateProduct = useMutation({
-        mutationFn: (images: string[]) => httpRequest({
+        mutationFn: (images: string[]) => apiRequest({
             showMessageFailed: true,
             showMessageSuccess: true,
-            showLoading: false,
             msgSuccess: 'Thêm sản phẩm thành công!',
-            http: async () => productService.updateProduct({
+            api: async () => productService.updateProduct({
                 ...form,
                 price: price(form.price),
                 discount: price(form.discount ?? 0),
@@ -545,15 +853,14 @@ function FormUpdateProduct({queryKeys, onClose}: IFormProductProps) {
         if (newImages.length > 0) {
             const imgs = newImages?.map((v: any) => v?.file);
 
-            const dataImage = await httpRequest({
-                showLoading: false,
-                http: () => uploadFileService.uploadMultiFile(imgs),
+            const dataImage = await apiRequest({
+                api: () => uploadFileService.uploadMultiFile(imgs),
             });
 
             if (dataImage !== null) {
                 return funcUpdateProduct.mutate([...remainingImages, ...dataImage]);
             } else {
-                return toastWarn({msg: 'Upload ảnh thất bại!'});
+                return toast.error('Upload ảnh thất bại!', ToastCustom.toastError);
             }
         } else {
             return funcUpdateProduct.mutate(remainingImages);
@@ -562,7 +869,7 @@ function FormUpdateProduct({queryKeys, onClose}: IFormProductProps) {
 
     return (
         <Form form={form} setForm={setForm} onSubmit={handleSubmit}>
-            {/*<Loading loading={funcCreateProduct.isPending}/>*/}
+            <Loading loading={funcUpdateProduct.isPending}/>
             <div className="relative w-[540px] h-screen bg-white flex flex-col">
                 <h4 className="text-[#2f3d50] text-xl font-semibold p-6">Chỉnh sửa sản phẩm</h4>
                 <div className="flex-1 overflow-auto bg-[#f4f5f6] rounded-2xl p-6 flex flex-col gap-4">
@@ -577,27 +884,12 @@ function FormUpdateProduct({queryKeys, onClose}: IFormProductProps) {
 							</span>
                         }
                     />
-                    <SelectMany
-                        text={"danh mục"}
-                        label='Chọn danh mục'
-                        placeholder='Chọn danh mục'
-                        selectedItems={form.categoryIds}
-                        options={listCategory}
-                        setSelectedItems={(list) =>
-                            setForm((prev) => ({
-                                ...prev,
-                                categoryIds: list as number[],
-                            }))
-                        }
-                        onRemove={(item) =>
-                            setForm((prev) => ({
-                                ...prev,
-                                categoryIds: prev.categoryIds.filter((v) => v !== item)
-                            }))
-                        }
-                        getOptionLabel={(item) => item.name}
-                        getOptionValue={(item) => item.id}
-                    />
+                    <div className="flex w-fit items-center justify-center gap-2">
+                        <div className={clsx("cursor-pointer border border-gray-300 rounded-md p-2 border-red-400 bg-red-400 text-white")}>
+                            {form.type === ProductType.Main ? 'Sản phẩm chính' : 'Topping'}
+                        </div>
+                    </div>
+
                     <Input
                         placeholder='Nhập giá sản phẩm'
                         name='price'
@@ -610,6 +902,56 @@ function FormUpdateProduct({queryKeys, onClose}: IFormProductProps) {
 							</span>
                         }
                     />
+                    <SelectMany
+                    text={"danh mục"}
+                    label='Chọn danh mục'
+                    placeholder='Chọn danh mục'
+                    selectedItems={form.categoryIds}
+                    options={listCategory}
+                    setSelectedItems={(list) =>
+                        setForm((prev) => ({
+                            ...prev,
+                            categoryIds: list as number[],
+                        }))
+                    }
+                    onRemove={(item) =>
+                        setForm((prev) => ({
+                            ...prev,
+                            categoryIds: prev.categoryIds.filter((v) => v !== item)
+                        }))
+                    }
+                    getOptionLabel={(item) => item.name}
+                    getOptionValue={(item) => item.id}
+                />
+                    <div>
+                        <span className="font-[500] text-[16px] mb-2 block">Giá theo size</span>
+                        {form.sizePrices.map((_, index) =>
+                            <SizePrice
+                                index={index}
+                                form={form}
+                                setForm={setForm}
+                                listSize={listSize}/>
+                        )}
+                        {form.sizePrices.length < listSize.length &&
+                            <p
+                                className="cursor-pointer text-blue-600"
+                                onClick={() => setForm((prev) => {
+                                    if (prev.sizePrices.length === listSize.length) return prev;
+                                    return {
+                                        ...prev,
+                                        sizePrices: [
+                                            ...prev.sizePrices,
+                                            {
+                                                sizeId: 0,
+                                                price: 0,
+                                            },
+                                        ],
+                                    };
+                                })}>
+                                Thêm size
+                            </p>
+                        }
+                    </div>
                     <div className="flex gap-4 flex-row">
                         <Input
                             placeholder='Giảm giá'
@@ -653,6 +995,33 @@ function FormUpdateProduct({queryKeys, onClose}: IFormProductProps) {
                                 }));
                             }}
                         />
+                    </div>
+                    <div className="flex items-center gap-4 justify-start">
+                        <div className="flex items-center justify-start gap-[10px]">
+                            <input type="checkbox" id="remarked" className="w-6 h-6"
+                                   checked={form.remarked == BooleanType.True}
+                                   onChange={(e) => {
+                                       setForm((prev) => ({
+                                           ...prev,
+                                           remarked: e.target.checked ? BooleanType.True : BooleanType.False,
+                                       }));
+                                   }}
+                            />
+                            <label htmlFor="remarked" className="text-[16px] font-[500] block mb-0!">Nổi bật</label>
+                        </div>
+                        <div className="flex items-center justify-start gap-[10px]">
+                            <input type="checkbox" id="bestSell" className="w-6 h-6"
+                                   checked={form.bestSell == BooleanType.True}
+                                   onChange={(e) => {
+                                       setForm((prev) => ({
+                                           ...prev,
+                                           bestSell: e.target.checked ? BooleanType.True : BooleanType.False,
+                                       }));
+                                   }}
+                            />
+                            <label htmlFor="bestSell" className="text-[16px] font-[500] block mb-0!">Best
+                                seller</label>
+                        </div>
                     </div>
                     <TextArea name='description' placeholder='Nhập mô tả' label='Mô tả'/>
                     <UploadMultipleFile images={images} setImages={setImages}/>

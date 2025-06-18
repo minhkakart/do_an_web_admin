@@ -5,7 +5,7 @@ import {usePathname, useRouter, useSearchParams} from "next/navigation";
 import {PageSize} from "~/constants/config";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {IFormProps, IPageResponse} from "~/commons/interfaces";
-import {httpRequest} from "~/services";
+import {apiRequest} from "~/services";
 import {QueryKey, TypeGender} from "~/constants/config/enum";
 import {
     IEmployeeDto,
@@ -43,9 +43,8 @@ export default function Employees() {
 
     const {data, isLoading} = useQuery<IPageResponse<IEmployeeDto>>({
         queryFn: () =>
-            httpRequest({
-                showLoading: false,
-                http: async () => employeeService.getListPageEmployee({
+            apiRequest({
+                api: async () => employeeService.getListPageEmployee({
                     page: page,
                     size: pageSize,
                     keyword: keyword,
@@ -193,12 +192,11 @@ function FormCreateEmployee({queryKeys, onClose}: IFormProps) {
     })
 
     const funcCreateEmployee = useMutation({
-        mutationFn: () => httpRequest({
+        mutationFn: () => apiRequest({
             showMessageFailed: true,
             showMessageSuccess: true,
-            showLoading: false,
             msgSuccess: 'Thêm nhân viên thành công!',
-            http: async () => employeeService.createEmployee({
+            api: async () => employeeService.createEmployee({
                 ...form,
                 birthDate: form.birthDate?.toString(),
                 phone: form.phone?.trim().length == 0 ? null : form.phone,
@@ -317,7 +315,7 @@ function FormCreateEmployee({queryKeys, onClose}: IFormProps) {
                         label={<span>Ngày sinh</span>}
                         placeholder='Nhập ngày sinh'
                     />
-                    <TextArea name='address' placeholder='Nhập địa chỉ' label='Địa chỉ' />
+                    <TextArea name='address' placeholder='Nhập địa chỉ' label='Địa chỉ'/>
                 </div>
                 <div className="flex items-center justify-end gap-[10px] p-6">
                     <div>
@@ -361,9 +359,8 @@ function FormUpdateEmployee({queryKeys, onClose}: IFormProps) {
 
     const {data, isFetched} = useQuery<IEmployeeInfoDto | null>({
         queryFn: () =>
-            httpRequest({
-                showLoading: false,
-                http: async () => employeeService.getInfoEmployee({
+            apiRequest({
+                api: async () => employeeService.getInfoEmployee({
                     id: Number(_id),
                 }),
             }),
@@ -375,7 +372,7 @@ function FormUpdateEmployee({queryKeys, onClose}: IFormProps) {
     });
 
     useEffect(() => {
-        if (!!data){
+        if (!!data) {
             setForm({
                 id: data.id,
                 fullname: data.fullname,
@@ -385,15 +382,14 @@ function FormUpdateEmployee({queryKeys, onClose}: IFormProps) {
                 address: data.address ?? "",
             });
         }
-    },[isFetched])
+    }, [isFetched])
 
     const funcUpdateEmployee = useMutation({
-        mutationFn: () => httpRequest({
+        mutationFn: () => apiRequest({
             showMessageFailed: true,
             showMessageSuccess: true,
-            showLoading: false,
             msgSuccess: 'Chỉnh sửa nhân viên thành công!',
-            http: async () => employeeService.updateEmployee({
+            api: async () => employeeService.updateEmployee({
                 ...form,
                 birthDate: form.birthDate?.length === 0 ? null : form.birthDate,
                 phone: form.phone?.trim().length == 0 ? null : form.phone,
@@ -501,7 +497,7 @@ function FormUpdateEmployee({queryKeys, onClose}: IFormProps) {
                         label={<span>Ngày sinh</span>}
                         placeholder='Nhập ngày sinh'
                     />
-                    <TextArea name='address' placeholder='Nhập địa chỉ' label='Địa chỉ' />
+                    <TextArea name='address' placeholder='Nhập địa chỉ' label='Địa chỉ'/>
                 </div>
                 <div className="flex items-center justify-end gap-[10px] p-6">
                     <div>

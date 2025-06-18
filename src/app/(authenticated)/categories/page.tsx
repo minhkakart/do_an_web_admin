@@ -11,13 +11,15 @@ import {Edit, FolderOpen} from "iconsax-react";
 import {IoClose} from "react-icons/io5";
 import {usePathname, useRouter, useSearchParams} from "next/navigation";
 import TextArea from "~/components/commons/Form/components/TextArea";
-import {httpRequest} from "~/services";
+import {apiRequest} from "~/services";
 import categoryService from "~/services/apis/categoryService";
 import Loading from "~/components/commons/Loading";
 import {
+    ICategoryDto,
+    IFormCategoryProps,
     IFormCreateCategory,
-    IFormCategoryProps, IFormUpdateCategory,
-    ITableCategory, ICategoryDto
+    IFormUpdateCategory,
+    ITableCategory
 } from "~/app/(authenticated)/categories/interfaces";
 import {IPageResponse} from "~/commons/interfaces";
 import Pagination from "~/components/commons/Pagination";
@@ -39,9 +41,8 @@ export default function Categories() {
 
     const {data, isLoading} = useQuery<IPageResponse<ITableCategory>>({
         queryFn: () =>
-            httpRequest({
-                showLoading: false,
-                http: async () => categoryService.getListPageCategory({
+            apiRequest({
+                api: async () => categoryService.getListPageCategory({
                     page: page,
                     size: pageSize,
                     keyword: keyword,
@@ -55,7 +56,7 @@ export default function Categories() {
 
     return (
         <>
-            <Loading loading={isLoading} />
+            <Loading loading={isLoading}/>
             <div className="flex justify-between items-center gap-3 flex-wrap mb-3">
                 <div className="flex gap-3 flex-wrap">
                     <div className="min-w-[400px]">
@@ -185,12 +186,11 @@ function FormCreateCategory({queryKeys, onClose}: IFormCategoryProps) {
     })
 
     const funcCreateCategory = useMutation({
-        mutationFn: () => httpRequest({
+        mutationFn: () => apiRequest({
             showMessageFailed: true,
             showMessageSuccess: true,
-            showLoading: false,
             msgSuccess: 'Thêm danh mục thành công!',
-            http: async () => categoryService.createCategory({
+            api: async () => categoryService.createCategory({
                 name: form.name,
                 description: form.description,
             })
@@ -272,9 +272,8 @@ function FormUpdateCategory({queryKeys, onClose}: IFormCategoryProps) {
     })
     const {data, isFetched} = useQuery<ICategoryDto | null>({
         queryFn: () =>
-            httpRequest({
-                showLoading: false,
-                http: async () => categoryService.detailCategory({
+            apiRequest({
+                api: async () => categoryService.detailCategory({
                     id: Number(_id),
                 }),
             }),
@@ -286,18 +285,17 @@ function FormUpdateCategory({queryKeys, onClose}: IFormCategoryProps) {
     });
 
     useEffect(() => {
-        if (!!data){
+        if (!!data) {
             setForm(data!);
         }
-    },[isFetched])
+    }, [isFetched])
 
     const funcUpdateCategory = useMutation({
-        mutationFn: () => httpRequest({
+        mutationFn: () => apiRequest({
             showMessageFailed: true,
             showMessageSuccess: true,
-            showLoading: false,
             msgSuccess: 'Chỉnh sửa danh mục thành công!',
-            http: async () => categoryService.updateCategory({
+            api: async () => categoryService.updateCategory({
                 id: form?.id ?? 0,
                 name: form?.name ?? "",
                 description: form?.description ?? "",

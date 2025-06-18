@@ -20,6 +20,9 @@ export interface PropsInput {
 	placeholder: string;
 	unit?: string;
 
+	value?: any;
+	onChange?: (arg: any) => any;
+
 	onClick?: () => void;
 
 	[props: string]: any;
