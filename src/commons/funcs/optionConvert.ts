@@ -92,3 +92,19 @@ export function convertFileSize(fileSizeInKB: number) {
         return (fileSizeInKB / 1073741824).toFixed(2) + ' tb';
     }
 }
+
+
+export function toQueryString(params: any){
+    const queryString = Object.keys(params)
+        .map(key => {
+            const value = params[key];
+            if (value === null || value === undefined) {
+                return '';
+            }
+            return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+        })
+        .filter(part => part !== '')
+        .join('&');
+
+    return queryString ? `?${queryString}` : '';
+}

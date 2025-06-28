@@ -197,13 +197,6 @@ export default function Products() {
                                 </div>,
                         },
                         {
-                            title: 'Giảm giá',
-                            render: (row, _) =>
-                                <>
-                                    {convertCoin(row.discount)}{row.discountType === TypeDiscount.Percent ? "%" : "VNĐ"}
-                                </>,
-                        },
-                        {
                             title: 'Đánh giá',
                             className: "flex flex-row justify-start items-center gap-2",
                             render: (row, _) =>
@@ -276,16 +269,16 @@ export default function Products() {
                             fixedRight: true,
                             render: (row, _) => (
                                 <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                                    <IconCustom
-                                        icon={<Eye size='32' color='#6170E3'/>}
-                                        tooltip='Xem chi tiết'
-                                        background='rgba(97, 112, 227, 0.10)'
-                                        onClick={
-                                            () => {
-                                                router.push(pathname + `/${row.id}`);
-                                            }
-                                        }
-                                    />
+                                    {/*<IconCustom*/}
+                                    {/*    icon={<Eye size='32' color='#6170E3'/>}*/}
+                                    {/*    tooltip='Xem chi tiết'*/}
+                                    {/*    background='rgba(97, 112, 227, 0.10)'*/}
+                                    {/*    onClick={*/}
+                                    {/*        () => {*/}
+                                    {/*            router.push(pathname + `/${row.id}`);*/}
+                                    {/*        }*/}
+                                    {/*    }*/}
+                                    {/*/>*/}
                                     <IconCustom
                                         icon={<Edit color='#3772FF' size={24}/>}
                                         tooltip='Chỉnh sửa'
@@ -379,8 +372,6 @@ function FormCreateProduct({queryKeys, onClose}: IFormProductProps) {
         name: '',
         description: '',
         price: 0,
-        discount: 0,
-        discountType: TypeDiscount.Percent,
         categoryIds: [],
         sizePrices: [],
         bestSell: BooleanType.False,
@@ -417,7 +408,6 @@ function FormCreateProduct({queryKeys, onClose}: IFormProductProps) {
             api: async () => productService.createProduct({
                 ...form,
                 price: price(form.price),
-                discount: price(form.discount ?? 0),
                 imageUrls: images,
             })
         }),
@@ -489,9 +479,7 @@ function FormCreateProduct({queryKeys, onClose}: IFormProductProps) {
                                 sizePrices: [], // Reset size prices when switching to Topping
                                 remarked: BooleanType.False,
                                 bestSell: BooleanType.False,
-                                discount: 0,
                                 categoryIds: [],
-                                discountType: TypeDiscount.Percent,
                             })}
                         >
                             Topping
@@ -560,50 +548,6 @@ function FormCreateProduct({queryKeys, onClose}: IFormProductProps) {
                                         Thêm size
                                     </p>
                                 }
-                            </div>
-                            <div className="flex gap-4 flex-row">
-                                <Input
-                                    placeholder='Giảm giá'
-                                    name='discount'
-                                    type='text'
-                                    isMoney
-                                    min={0}
-                                    max={form.discountType == TypeDiscount.Percent ? 100 : form.price}
-                                    label={
-                                        <span>
-								Giảm giá
-							</span>
-                                    }
-                                    className={"flex-1"}
-                                />
-                                <SelectForm
-                                    placeholder='Lựa chọn'
-                                    label={
-                                        <span>
-									Loại giảm giá
-								</span>
-                                    }
-                                    isSearch={false}
-                                    value={form.discountType}
-                                    options={[
-                                        {
-                                            label: '%',
-                                            value: TypeDiscount.Percent,
-                                        },
-                                        {
-                                            label: 'VNĐ',
-                                            value: TypeDiscount.Absolute,
-                                        }
-                                    ]}
-                                    getOptionLabel={(opt) => opt.label}
-                                    getOptionValue={(opt) => opt.value}
-                                    onSelect={(opt) => {
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            discountType: opt.value,
-                                        }));
-                                    }}
-                                />
                             </div>
                             <div className="flex items-center gap-4 justify-start">
                                 <div className="flex items-center justify-start gap-[10px]">
@@ -755,8 +699,6 @@ function FormUpdateProduct({queryKeys, onClose}: IFormProductProps) {
         name: '',
         description: '',
         price: 0,
-        discount: 0,
-        discountType: TypeDiscount.Percent,
         categoryIds: [],
         sizePrices: [],
         bestSell: BooleanType.False,
@@ -808,8 +750,6 @@ function FormUpdateProduct({queryKeys, onClose}: IFormProductProps) {
                 name: detailProduct.name,
                 description: detailProduct.description,
                 price: detailProduct.price,
-                discount: detailProduct.discount,
-                discountType: detailProduct.discountType,
                 categoryIds: detailProduct.categories.map(c => c.id),
                 imageUrls: detailProduct.imageUrls,
                 sizePrices: detailProduct.sizePrices.map(s => ({sizeId: s.size.id, price: s.price})),
@@ -828,11 +768,10 @@ function FormUpdateProduct({queryKeys, onClose}: IFormProductProps) {
         mutationFn: (images: string[]) => apiRequest({
             showMessageFailed: true,
             showMessageSuccess: true,
-            msgSuccess: 'Thêm sản phẩm thành công!',
+            msgSuccess: 'Chỉnh sửa sản phẩm thành công!',
             api: async () => productService.updateProduct({
                 ...form,
                 price: price(form.price),
-                discount: price(form.discount ?? 0),
                 imageUrls: images,
             })
         }),
@@ -951,50 +890,6 @@ function FormUpdateProduct({queryKeys, onClose}: IFormProductProps) {
                                 Thêm size
                             </p>
                         }
-                    </div>
-                    <div className="flex gap-4 flex-row">
-                        <Input
-                            placeholder='Giảm giá'
-                            name='discount'
-                            type='text'
-                            isMoney
-                            min={0}
-                            max={form.discountType == TypeDiscount.Percent ? 100 : form.price}
-                            label={
-                                <span>
-								Giảm giá
-							</span>
-                            }
-                            className={"flex-1"}
-                        />
-                        <SelectForm
-                            placeholder='Lựa chọn'
-                            label={
-                                <span>
-									Loại giảm giá
-								</span>
-                            }
-                            isSearch={false}
-                            value={form.discountType}
-                            options={[
-                                {
-                                    label: '%',
-                                    value: TypeDiscount.Percent,
-                                },
-                                {
-                                    label: 'VNĐ',
-                                    value: TypeDiscount.Absolute,
-                                }
-                            ]}
-                            getOptionLabel={(opt) => opt.label}
-                            getOptionValue={(opt) => opt.value}
-                            onSelect={(opt) => {
-                                setForm((prev) => ({
-                                    ...prev,
-                                    discountType: opt.value,
-                                }));
-                            }}
-                        />
                     </div>
                     <div className="flex items-center gap-4 justify-start">
                         <div className="flex items-center justify-start gap-[10px]">

@@ -16,8 +16,6 @@ export interface IProductDto extends IBaseDto {
     name: string;
     price: number;
     isAvailable: number;
-    discount: number | null;
-    discountType: number | null;
     sizePrices: {
         id: number;
         size: {
@@ -43,8 +41,6 @@ export interface ICreateProductRequest {
     name: string;
     description: string;
     price: number;
-    discount: number | null;
-    discountType: number | null;
     bestSell: number;
     remarked: number;
     type: number;

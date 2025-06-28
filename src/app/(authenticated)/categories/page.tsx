@@ -56,7 +56,6 @@ export default function Categories() {
 
     return (
         <>
-            <Loading loading={isLoading}/>
             <div className="flex justify-between items-center gap-3 flex-wrap mb-3">
                 <div className="flex gap-3 flex-wrap">
                     <div className="min-w-[400px]">

@@ -1,0 +1,64 @@
+.container {
+	min-width: 240px;
+	height: 48px;
+	padding: 0 16px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 2px;
+	user-select: none;
+	border-radius: 4px;
+	background-color: #fff;
+	border: 1px solid #e1e5ed;
+	cursor: pointer;
+	transition: 0.3s;
+
+	&:hover {
+		border: 1px solid #3772ff;
+	}
+
+	&.styleRounded {
+		min-width: 200px;
+		height: 40px;
+		border-radius: 50px;
+		background-color: #f4f5f6;
+	}
+
+	&.active {
+		border: 1px solid #3772ff;
+
+		.icon_arrow {
+			transform: rotate(-180deg);
+		}
+	}
+
+	.value {
+		display: flex;
+		align-items: center;
+	}
+
+	.name {
+		font-weight: 500;
+		font-size: 14px;
+		color: #777e90;
+	}
+
+	.text {
+		flex: 1;
+		font-size: 14px;
+		font-weight: 500;
+		margin-left: 8px;
+		max-width: 240px;
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		word-break: break-word;
+		-webkit-line-clamp: 1;
+	}
+
+	.icon_arrow {
+		transition: 0.3s;
+		margin-left: 10px;
+	}
+}

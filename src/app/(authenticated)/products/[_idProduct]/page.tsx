@@ -74,12 +74,6 @@ function DetailProduct({params}: {
                                 </div>
                                 <span>{convertCoin(detailProduct?.price ?? 0) + "VNĐ" || '---'}</span>
                             </div>
-                            <div className="grid grid-cols-[180px_1fr] w-full font-semibold">
-                                <div className="flex justify-between pr-2">
-                                    <p>Giảm giá</p>:
-                                </div>
-                                <span>{convertCoin(detailProduct?.discount ?? 0) + (detailProduct?.discountType == TypeDiscount.Percent ? "%" : "VNĐ") || '---'}</span>
-                            </div>
                         </div>
                         <div className="flex flex-col gap-3">
                             <div className="grid grid-cols-[180px_1fr] w-full font-semibold">

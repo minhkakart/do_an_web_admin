@@ -1,5 +1,6 @@
 import {ArchiveBook, Award, BackwardItem, ElementEqual, HomeTrendUp, UserOctagon,} from 'iconsax-react';
 import {IMenu} from "~/commons/interfaces";
+import {TYPE_DATE} from "~/constants/config/enum";
 
 export const APP_NAME = 'ADMIN_EYD';
 
@@ -73,3 +74,49 @@ export const Menu: IMenu[] = [
 ];
 
 export const PageSize = [10, 20, 50, 100];
+
+export const ListOptionFilterDate: {
+	name: string;
+	value: number;
+}[] = [
+	{
+		name: 'Tất cả',
+		value: TYPE_DATE.ALL,
+	},
+	{
+		name: 'Hôm nay',
+		value: TYPE_DATE.TODAY,
+	},
+	// {
+	// 	name: 'Hôm qua',
+	// 	value: TYPE_DATE.YESTERDAY,
+	// },
+	{
+		name: 'Tuần này',
+		value: TYPE_DATE.THIS_WEEK,
+	},
+	// {
+	// 	name: 'Tuần trước',
+	// 	value: TYPE_DATE.LAST_WEEK,
+	// },
+	// {
+	// 	name: '7 ngày trước',
+	// 	value: TYPE_DATE.LAST_7_DAYS,
+	// },
+	{
+		name: 'Tháng này',
+		value: TYPE_DATE.THIS_MONTH,
+	},
+	// {
+	// 	name: 'Tháng trước',
+	// 	value: TYPE_DATE.LAST_MONTH,
+	// },
+	{
+		name: 'Năm này',
+		value: TYPE_DATE.THIS_YEAR,
+	},
+	{
+		name: 'Lựa chọn',
+		value: TYPE_DATE.LUA_CHON,
+	},
+];

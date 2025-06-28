@@ -6,8 +6,6 @@ const productService = {
             name: string;
             description: string;
             price: number;
-            discount: number | null;
-            discountType: number | null;
             bestSell: number;
             remarked: number;
             sizePrices: {
@@ -29,8 +27,6 @@ const productService = {
             name: string;
             description: string;
             price: number;
-            discount: number | null;
-            discountType: number | null;
             bestSell: number;
             remarked: number;
             sizePrices: {

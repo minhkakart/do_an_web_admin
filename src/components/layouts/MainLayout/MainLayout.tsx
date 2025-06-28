@@ -17,11 +17,11 @@ function MainLayout({children}: { children: React.ReactNode}) {
     );
 
     return (
-        <div className="min-h-screen bg-[#f8f8f8] min-w-screen flex flex-row justify-evenly gap-[1px]">
+        <div className="min-h-screen max-h-screen bg-[#f8f8f8] min-w-screen flex flex-row justify-evenly gap-[1px] overflow-auto">
             <nav className="w-[260px] min-w-[240px] flex-shrink-0 min-h-screen top-0 left-0 transition-all ease-in-out">
                 <Navbar/>
             </nav>
-            <div className="flex flex-col min-h-screen flex-auto">
+            <div className="flex flex-col min-h-screen max-h-screen flex-auto overflow-auto">
                 <header className="h-[68px] bg-white flex items-center mb-3">
                     <Header title={getPathTitle()} />
                 </header>
