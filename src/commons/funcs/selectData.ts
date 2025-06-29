@@ -16,18 +16,18 @@ export function getDateRange(range: number): {
 			return {from: new Date(), to: new Date()};
 
 		// Hôm qua
-		case TYPE_DATE.YESTERDAY:
-			const firstYesterday = new Date();
-			firstYesterday.setDate(today.getDate() - 1);
-
-			const lastYesterday = new Date();
-
-			lastYesterday.setDate(today.getDate() - 1);
-
-			return {
-				from: firstYesterday,
-				to: lastYesterday,
-			};
+		// case TYPE_DATE.YESTERDAY:
+		// 	const firstYesterday = new Date();
+		// 	firstYesterday.setDate(today.getDate() - 1);
+		//
+		// 	const lastYesterday = new Date();
+		//
+		// 	lastYesterday.setDate(today.getDate() - 1);
+		//
+		// 	return {
+		// 		from: firstYesterday,
+		// 		to: lastYesterday,
+		// 	};
 
 		// Tuần này
 		case TYPE_DATE.THIS_WEEK:
@@ -40,14 +40,14 @@ export function getDateRange(range: number): {
 			return {from: firstDayOfWeek, to: lastDayOfWeek};
 
 		// Tuần trước
-		case TYPE_DATE.LAST_WEEK:
-			const firstDayLastWeek = new Date(today);
-			firstDayLastWeek.setDate(today.getDate() - today.getDay() - 7);
-
-			const lastDayLastWeek = new Date(today);
-			lastDayLastWeek.setDate(today.getDate() - today.getDay() - 1);
-
-			return {from: firstDayLastWeek, to: lastDayLastWeek};
+		// case TYPE_DATE.LAST_WEEK:
+		// 	const firstDayLastWeek = new Date(today);
+		// 	firstDayLastWeek.setDate(today.getDate() - today.getDay() - 7);
+		//
+		// 	const lastDayLastWeek = new Date(today);
+		// 	lastDayLastWeek.setDate(today.getDate() - today.getDay() - 1);
+		//
+		// 	return {from: firstDayLastWeek, to: lastDayLastWeek};
 
 		// Tháng này
 		case TYPE_DATE.THIS_MONTH:
@@ -57,11 +57,11 @@ export function getDateRange(range: number): {
 			return {from: firstDayOfMonth, to: lastDayOfMonth};
 
 		// Tháng trước
-		case TYPE_DATE.LAST_MONTH:
-			const firstDayLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-			const lastDayLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-
-			return {from: firstDayLastMonth, to: lastDayLastMonth};
+		// case TYPE_DATE.LAST_MONTH:
+		// 	const firstDayLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+		// 	const lastDayLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+		//
+		// 	return {from: firstDayLastMonth, to: lastDayLastMonth};
 
 		// Năm nay
 		case TYPE_DATE.THIS_YEAR:
@@ -71,11 +71,11 @@ export function getDateRange(range: number): {
 			return {from: firstDayOfYear, to: lastDayOfYear};
 
 		// 7 ngày trước
-		case TYPE_DATE.LAST_7_DAYS:
-			const firstDayLast7Days = new Date(today);
-			firstDayLast7Days.setDate(today.getDate() - 7);
-
-			return {from: firstDayLast7Days, to: today};
+		// case TYPE_DATE.LAST_7_DAYS:
+		// 	const firstDayLast7Days = new Date(today);
+		// 	firstDayLast7Days.setDate(today.getDate() - 7);
+		//
+		// 	return {from: firstDayLast7Days, to: today};
 
 		default:
 			return {from: null, to: null};
