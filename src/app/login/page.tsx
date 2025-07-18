@@ -45,7 +45,7 @@ function Login() {
         async onSuccess(data: IToken) {
             if (data) {
                 if (saveToken) {
-                    setItemStorage(KEY_STORAGE_TOKEN, JSON.stringify(data));
+                    setItemStorage(KEY_STORAGE_TOKEN, data);
                 } else {
                     deleteItemStorage(KEY_STORAGE_TOKEN);
                 }
